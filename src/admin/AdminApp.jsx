@@ -212,6 +212,7 @@ export default function AdminApp() {
   const [notice, setNotice] = useState(null);
   const [version, setVersion] = useState(0); // re-keys the fields after load/reset/import
   const [previewPrefs, updatePreview] = usePreviewPrefs();
+  const [flash, setFlash] = useState(null); // { type: 'success' | 'error', text }
 
   const info = sectionInfo(section);
   const fields = cfg.fields[section] || [];
@@ -295,16 +296,28 @@ export default function AdminApp() {
 
   const onChange = (key, v) => setValues((vals) => ({ ...vals, [key]: v }));
 
+  // Short confirmation in the floating save bar (the top notice may be scrolled out of view).
+  const flashTimer = useRef(0);
+  const showFlash = useCallback((type, text) => {
+    clearTimeout(flashTimer.current);
+    setFlash({ type, text });
+    if (type !== 'error') flashTimer.current = setTimeout(() => setFlash(null), 2500);
+  }, []);
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
+
   const save = async (e) => {
     e?.preventDefault();
+    if (status === 'saving' || status === 'loading' || !values) return;
     setStatus('saving');
     try {
       apply(await api(`settings/${section}`, { method: 'POST', body: { values } }));
       notify('success', 'Settings saved.');
+      showFlash('success', 'Saved');
       setStatus('ready');
     } catch (err) {
       setStatus('ready');
       notify('error', err.message);
+      showFlash('error', 'Not saved: see the message at the top');
     }
   };
 
@@ -314,12 +327,28 @@ export default function AdminApp() {
     try {
       apply(await api(`settings/${section}/reset`, { method: 'POST' }));
       notify('success', 'Section reset to defaults.');
+      showFlash('success', 'Reset to defaults');
       setStatus('ready');
     } catch (err) {
       setStatus('ready');
       notify('error', err.message);
+      showFlash('error', 'Not reset: see the message at the top');
     }
   };
+
+  // Ctrl+S / ⌘S saves the current section.
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveRef.current();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   const ctx = useMemo(
     () => ({ images, enabled, cfg, setImage: (id, url) => setImages((imgs) => ({ ...imgs, [id]: url })) }),
@@ -388,19 +417,6 @@ export default function AdminApp() {
               )}
             </form>
 
-            <div className="tw:sticky tw:bottom-0 tw:z-10 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-3 tw:border-t tw:border-neutral-200 tw:bg-white/90 tw:px-8 tw:py-4 tw:backdrop-blur">
-              <span className="tw:inline-flex tw:items-center tw:gap-2 tw:text-xs tw:font-medium tw:text-neutral-500" hidden={!dirty}>
-                <span className="tw:size-2 tw:rounded-full tw:bg-amber-500"></span>Unsaved changes
-              </span>
-              <span className="tw:ml-auto tw:flex tw:flex-wrap tw:gap-2">
-                <button type="button" className="jk-button jk-button-ghost" onClick={reset} disabled={busy || !values}>
-                  Reset to defaults
-                </button>
-                <button type="submit" form="jk-settings-form" className="jk-button jk-button-primary" disabled={busy || !values}>
-                  {status === 'saving' ? 'Saving…' : 'Save changes'}
-                </button>
-              </span>
-            </div>
           </section>
 
           {section === 'general' && (
@@ -414,6 +430,40 @@ export default function AdminApp() {
           )}
           </div>
         </div>
+      </div>
+      {/* Floating save bar: always in view, so you can save and move on from anywhere on the page. */}
+      <div className="jk-savebar" role="region" aria-label="Save settings">
+        <span className="jk-savebar-status" aria-live="polite">
+          {flash ? (
+            <span className={`tw:inline-flex tw:items-center tw:gap-2 ${flash.type === 'error' ? 'tw:text-red-700' : 'tw:text-emerald-700'}`}>
+              <span className={`dashicons ${flash.type === 'error' ? 'dashicons-warning' : 'dashicons-yes-alt'}`} aria-hidden="true"></span>
+              {flash.text}
+            </span>
+          ) : dirty ? (
+            <span className="tw:inline-flex tw:items-center tw:gap-2 tw:text-neutral-600">
+              <span className="tw:size-2 tw:rounded-full tw:bg-amber-500" aria-hidden="true"></span>Unsaved changes
+            </span>
+          ) : (
+            <span className="tw:text-neutral-400">
+              {info.title}: all changes saved
+            </span>
+          )}
+        </span>
+        <span className="tw:flex tw:flex-wrap tw:gap-2">
+          <button type="button" className="jk-button jk-button-ghost" onClick={reset} disabled={busy || !values}>
+            Reset to defaults
+          </button>
+          <button
+            type="submit"
+            form="jk-settings-form"
+            className="jk-button jk-button-primary"
+            disabled={busy || !values}
+            title="Save changes (Ctrl+S)"
+            aria-keyshortcuts="Control+S Meta+S"
+          >
+            {status === 'saving' ? 'Saving…' : 'Save changes'}
+          </button>
+        </span>
       </div>
     </FieldContext.Provider>
   );

@@ -548,3 +548,49 @@
     }
   }
 }
+
+/* -------------------------------------------------------------- save bar */
+
+/* Floats over the bottom-right of the screen, so saving never needs a scroll. */
+.jk-admin {
+  padding-bottom: 104px; /* room so the last field is never under the bar */
+}
+.jk-savebar {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9990; /* above page content, below wp-admin's media modal (160000) */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  max-width: calc(100vw - 48px);
+  padding: 10px 10px 10px 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12), 0 2px 6px rgb(0 0 0 / 0.06);
+  backdrop-filter: blur(8px);
+  font-family: var(--tw-font-sans);
+}
+.jk-savebar-status {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.jk-savebar-status .dashicons {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+/* wp-admin collapses its menu below 783px: span the full width instead of floating. */
+@media (max-width: 782px) {
+  .jk-savebar {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    max-width: none;
+    justify-content: space-between;
+    border-radius: 16px;
+  }
+}
