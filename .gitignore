@@ -6,3 +6,6 @@
 Thumbs.db
 *.log
 .phpcs-cache
+
+# Distribution zips (npm run bundle)
+*.zip

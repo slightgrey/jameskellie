@@ -16,9 +16,30 @@ A WordPress theme for jameskellie.com.au in which the whole front end and the Th
 - **Pages → Book an Appointment**: the Book Appointment box on the page edit screen.
 - **Export / Import** (on the General screen) uses the same JSON format as the PHP theme.
 
+## Versioning and releases
+
+The version lives in three places, and the scripts keep them in step: the `style.css` header (the source of truth), `JK_VERSION` in `functions.php`, and `package.json`.
+
+| Command | What it does |
+|---|---|
+| `npm run version:patch` | 2.0.0 → 2.0.1: fixes |
+| `npm run version:minor` | 2.0.0 → 2.1.0: new features |
+| `npm run version:major` | 2.0.0 → 3.0.0: breaking changes |
+| `npm run bundle` | Builds the assets and writes `jameskellie-vX.Y.Z.zip` |
+
+The bundle refuses to run while `npm run dev` is running (the `hot` file), or if the three versions disagree. The zip contains a `jameskellie/` folder with only what the live site needs: `inc/`, `config/`, `templates/`, `assets/`, `dist/`, `style.css` and the root PHP files. `src/`, `node_modules/`, `vendor/`, docs and scripts stay out. Zips are gitignored.
+
+A release:
+
+```bash
+npm run version:patch   # or minor / major
+npm run bundle
+git commit -am "chore: release vX.Y.Z"
+```
+
 ## Deploying
 
-Run `npm run build` and upload the theme without `node_modules/` and `vendor/`. `dist/` must be uploaded. The Vite `base` in `vite.config.js` expects the folder to be named `jameskellie`.
+Upload `jameskellie-vX.Y.Z.zip` under **Appearance → Themes → Add New → Upload Theme**, or upload the `jameskellie/` folder from the zip to `wp-content/themes/` over SFTP. The folder must be named `jameskellie`, because the Vite `base` in `vite.config.js` points there.
 
 ## SEO note
 
