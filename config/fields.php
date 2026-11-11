@@ -580,64 +580,101 @@ return [
 	],
 	'performance' => [
 		'title'   => 'Performance',
-		// Settings screen layout: two columns of fields on wide screens (React admin only).
+		// Settings screen layout (React admin only): themed cards in two columns.
 		'columns' => 2,
+		'groups'  => [
+			'cleanup'    => [
+				'icon'   => 'dashicons-trash',
+				'title'  => 'WordPress clean-up',
+				'help'   => 'Removes WordPress extras this theme does not use.',
+				'column' => 1,
+			],
+			'speed'      => [
+				'icon'   => 'dashicons-performance',
+				'title'  => 'Speed & loading',
+				'help'   => 'Smaller pages and faster first paint.',
+				'column' => 2,
+			],
+			'navigation' => [
+				'icon'   => 'dashicons-randomize',
+				'title'  => 'Navigation',
+				'help'   => 'Moving between pages without a full reload.',
+				'column' => 2,
+			],
+			'heartbeat'  => [
+				'icon'   => 'dashicons-heart',
+				'title'  => 'Heartbeat',
+				'help'   => 'Background check-ins from WordPress (autosave, login checks).',
+				'column' => 1,
+			],
+		],
 		'fields'  => [
 			[
 				'key'   => 'minify_html',
+				'group' => 'speed',
 				'type'  => 'toggle',
 				'label' => 'Minify HTML',
 				'help'  => 'Removes comments and extra whitespace from front-end pages (View Source shows compact HTML). Turn off while debugging markup.',
 			],
 			[
 				'key'   => 'disable_emojis',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Disable emojis',
 			],
 			[
 				'key'   => 'disable_oembed',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Disable oEmbed / wp-embed',
 			],
 			[
 				'key'   => 'remove_block_css',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Remove block library CSS',
 			],
 			[
 				'key'   => 'remove_jquery',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Remove jQuery on the front end',
 				'help'  => 'Skipped automatically when an enqueued script depends on jQuery.',
 			],
 			[
 				'key'   => 'disable_dashicons',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Disable Dashicons for visitors',
 			],
 			[
 				'key'   => 'clean_head',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Clean <head>',
 				'help'  => 'Removes generator, RSD, WLW manifest, shortlink, REST link/header and adjacent post links.',
 			],
 			[
 				'key'   => 'disable_xmlrpc',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Disable XML-RPC',
 			],
 			[
 				'key'   => 'feed_links',
+				'group' => 'cleanup',
 				'type'  => 'toggle',
 				'label' => 'Keep RSS feed links',
 			],
 			[
 				'key'   => 'heartbeat_front',
+				'group' => 'heartbeat',
 				'type'  => 'toggle',
 				'label' => 'Heartbeat on the front end',
 			],
 			[
 				'key'   => 'heartbeat_admin',
+				'group' => 'heartbeat',
 				'type'  => 'number',
 				'label' => 'Heartbeat interval in admin (seconds)',
 				'min'   => 15,
@@ -645,31 +682,37 @@ return [
 			],
 			[
 				'key'   => 'fonts_preload',
+				'group' => 'speed',
 				'type'  => 'toggle',
 				'label' => 'Preload critical fonts',
 			],
 			[
 				'key'   => 'preconnect',
+				'group' => 'speed',
 				'type'  => 'list',
 				'label' => 'Preconnect origins (one per line)',
 			],
 			[
 				'key'   => 'spa',
+				'group' => 'navigation',
 				'type'  => 'toggle',
 				'label' => 'SPA navigation',
 			],
 			[
 				'key'   => 'prefetch',
+				'group' => 'navigation',
 				'type'  => 'toggle',
 				'label' => 'Link prefetch on hover',
 			],
 			[
 				'key'   => 'lazy_calendly',
+				'group' => 'speed',
 				'type'  => 'toggle',
 				'label' => 'Lazy-load Calendly',
 			],
 			[
 				'key'   => 'delay_code',
+				'group' => 'speed',
 				'type'  => 'toggle',
 				'label' => 'Delay Custom Code footer scripts until interaction',
 				'help'  => 'Runs them on first scroll, click or keydown, or after 5 seconds.',

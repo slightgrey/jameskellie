@@ -60,7 +60,58 @@ export function FieldTable({ fields, values, onChange, base, compact = false, gr
     return <div className={`${cls} tw:divide-y tw:divide-neutral-200`}>{rows(shown)}</div>;
   }
 
+  if (columns === 2 && !compact) return <GroupCards cls={cls} shown={shown} groups={groups} base={base} rows={rows} />;
   return <GroupedFields cls={cls} shown={shown} groups={groups} base={base} rows={rows} />;
+}
+
+/** Group heading: icon tile, title and note. Shared by the stacked groups and the cards. */
+function GroupHead({ id, icon, title, help }) {
+  return (
+    <header className="jk-field-group-head">
+      {icon && (
+        <span className="jk-field-group-icon" aria-hidden="true">
+          <span className={`dashicons ${icon}`}></span>
+        </span>
+      )}
+      <div>
+        <h2 id={id} tabIndex={-1}>
+          {title}
+        </h2>
+        {help && <p>{help}</p>}
+      </div>
+    </header>
+  );
+}
+
+/**
+ * Groups as cards in two stacks (sections with 'columns' => 2, e.g. Performance).
+ * Each group's 'column' (1 or 2) picks its stack; on narrow screens the stacks run one after
+ * the other. Every card is short, so no jump nav is needed.
+ */
+function GroupCards({ cls, shown, groups, base, rows }) {
+  const blocks = Object.entries(groups)
+    .map(([key, g]) => ({ key, ...g, fields: shown.filter((f) => f.group === key) }))
+    .filter((b) => b.fields.length);
+  const ungrouped = shown.filter((f) => !f.group || !groups[f.group]);
+  const stack = (n) => blocks.filter((b) => (Number(b.column) === 2 ? 2 : 1) === n);
+  const card = (b) => {
+    const id = htmlId(`${base}-group-${b.key}`);
+    return (
+      <section key={b.key} id={id} className="jk-group-card" aria-labelledby={`${id}-title`}>
+        <GroupHead id={`${id}-title`} icon={b.icon} title={b.title} help={b.help} />
+        <div className="jk-group-card-rows">{rows(b.fields)}</div>
+      </section>
+    );
+  };
+  return (
+    <div className={`${cls} jk-group-cards-wrap`}>
+      {ungrouped.length > 0 && <div className="tw:divide-y tw:divide-neutral-200">{rows(ungrouped)}</div>}
+      <div className="jk-group-cards">
+        <div className="jk-group-stack">{stack(1).map(card)}</div>
+        <div className="jk-group-stack">{stack(2).map(card)}</div>
+      </div>
+    </div>
+  );
 }
 
 /** wp-admin bar height (32px, 46px on small screens), from core's own CSS variable. */
@@ -142,19 +193,7 @@ function GroupedFields({ cls, shown, groups, base, rows }) {
       {ungrouped.length > 0 && <div className="tw:divide-y tw:divide-neutral-200">{rows(ungrouped)}</div>}
       {blocks.map((b) => (
         <section key={b.key} id={groupId(b.key)} className="jk-field-group" aria-labelledby={`${groupId(b.key)}-title`}>
-          <header className="jk-field-group-head">
-            {b.icon && (
-              <span className="jk-field-group-icon" aria-hidden="true">
-                <span className={`dashicons ${b.icon}`}></span>
-              </span>
-            )}
-            <div>
-              <h2 id={`${groupId(b.key)}-title`} tabIndex={-1}>
-                {b.title}
-              </h2>
-              {b.help && <p>{b.help}</p>}
-            </div>
-          </header>
+          <GroupHead id={`${groupId(b.key)}-title`} icon={b.icon} title={b.title} help={b.help} />
           <div className="tw:divide-y tw:divide-neutral-200">{rows(b.fields)}</div>
         </section>
       ))}
