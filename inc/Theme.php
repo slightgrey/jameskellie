@@ -39,6 +39,7 @@ final class Theme {
 			( new Admin\Menu() )->hooks();
 			( new Admin\AppointmentMetaBox() )->hooks();
 			( new Admin\EnquiryView() )->hooks();
+			( new Admin\EnquiryList() )->hooks();
 		}
 	}
 

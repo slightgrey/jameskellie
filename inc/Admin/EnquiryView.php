@@ -92,21 +92,18 @@ final class EnquiryView {
 		$card  = 'tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:shadow-sm';
 		?>
 		<div class="jk-admin">
-			<?php // Header bar, as on Theme Settings. ?>
-			<div class="jk-dark tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-4 tw:rounded-2xl tw:bg-ink tw:px-6 tw:py-5 tw:text-white">
-				<div class="tw:flex tw:items-center tw:gap-4">
-					<span class="tw:flex tw:size-11 tw:items-center tw:justify-center tw:bg-white tw:text-[24px] tw:leading-none tw:font-bold tw:text-ink" style="font-family:'Roboto Condensed','Arial Narrow',sans-serif" aria-hidden="true">JK</span>
-					<div>
-						<p class="tw:m-0 tw:text-[15px] tw:font-bold tw:tracking-[0.16em] tw:text-white" style="font-family:'Roboto Condensed','Arial Narrow',sans-serif">JAMES KELLIE</p>
-						<p class="tw:m-0 tw:text-xs tw:text-neutral-400"><?php esc_html_e( 'Enquiry', 'jameskellie' ); ?></p>
-					</div>
-				</div>
-				<nav class="tw:flex tw:flex-wrap tw:gap-2" aria-label="<?php esc_attr_e( 'Enquiries', 'jameskellie' ); ?>">
+			<?php
+			self::header_bar(
+				__( 'Enquiry', 'jameskellie' ),
+				static function () use ( $list, $newer, $older ): void {
+					?>
 					<a class="jk-button jk-button-outline-light" href="<?php echo esc_url( $list ); ?>"><span aria-hidden="true">←</span> <?php esc_html_e( 'All enquiries', 'jameskellie' ); ?></a>
-					<?php self::nav_button( $newer, __( 'Newer', 'jameskellie' ), 'prev' ); ?>
-					<?php self::nav_button( $older, __( 'Older', 'jameskellie' ), 'next' ); ?>
-				</nav>
-			</div>
+					<?php
+					self::nav_button( $newer, __( 'Newer', 'jameskellie' ), 'prev' );
+					self::nav_button( $older, __( 'Older', 'jameskellie' ), 'next' );
+				}
+			);
+		?>
 
 			<div class="tw:mt-6 tw:grid tw:items-start tw:gap-6 tw:min-[1100px]:grid-cols-[minmax(0,1fr)_340px]">
 				<?php // The message. ?>
@@ -203,6 +200,30 @@ final class EnquiryView {
 					<?php endif; ?>
 				</aside>
 			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The black JK header bar used on Theme Settings, the enquiry list and single enquiries.
+	 *
+	 * @param string   $subtitle Line under JAMES KELLIE.
+	 * @param callable $actions  Prints the buttons on the right.
+	 */
+	public static function header_bar( string $subtitle, callable $actions ): void {
+		$logo = "font-family:'Roboto Condensed','Arial Narrow',sans-serif";
+		?>
+		<div class="jk-dark tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-4 tw:rounded-2xl tw:bg-ink tw:px-6 tw:py-5 tw:text-white">
+			<div class="tw:flex tw:items-center tw:gap-4">
+				<span class="tw:flex tw:size-11 tw:items-center tw:justify-center tw:bg-white tw:text-[24px] tw:leading-none tw:font-bold tw:text-ink" style="<?php echo esc_attr( $logo ); ?>" aria-hidden="true">JK</span>
+				<div>
+					<p class="tw:m-0 tw:text-[15px] tw:font-bold tw:tracking-[0.16em] tw:text-white" style="<?php echo esc_attr( $logo ); ?>">JAMES KELLIE</p>
+					<p class="tw:m-0 tw:text-xs tw:text-neutral-400"><?php echo esc_html( $subtitle ); ?></p>
+				</div>
+			</div>
+			<nav class="tw:flex tw:flex-wrap tw:items-center tw:gap-2" aria-label="<?php esc_attr_e( 'Enquiries', 'jameskellie' ); ?>">
+				<?php $actions(); ?>
+			</nav>
 		</div>
 		<?php
 	}

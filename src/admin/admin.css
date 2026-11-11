@@ -804,3 +804,226 @@
     column-gap: 24px !important;
   }
 }
+
+/* -------------------------------------------------------------- enquiries list */
+
+/* edit.php?post_type=jk_enquiry (inc/Admin/EnquiryList.php). WordPress's list table, dressed
+   like the single enquiry view: JK header bar, card table, chips and status badges. */
+.jk-enquiries-screen .wrap > h1.wp-heading-inline,
+.jk-enquiries-screen .wrap > .page-title-action,
+.jk-enquiries-screen .wrap > hr.wp-header-end {
+  display: none;
+}
+.jk-enquiries-screen .jk-enquiries-head {
+  margin: 12px 0 20px;
+  padding-bottom: 0;
+}
+.jk-enquiries-screen .wrap {
+  font-family: var(--tw-font-sans);
+}
+
+/* Views (All | Trash) and search. */
+.jk-enquiries-screen .subsubsub {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+.jk-enquiries-screen .subsubsub a {
+  color: #525252;
+}
+.jk-enquiries-screen .subsubsub a.current {
+  color: #0a0a0a;
+  font-weight: 700;
+}
+.jk-enquiries-screen .search-box input[type="search"] {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 999px;
+}
+.jk-enquiries-screen .search-box input[type="search"]:focus {
+  border-color: #0a0a0a;
+  box-shadow: 0 0 0 3px rgb(10 10 10 / 0.1);
+}
+.jk-enquiries-screen .tablenav .button,
+.jk-enquiries-screen .search-box .button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #d4d4d4;
+  border-radius: 999px;
+  background: #fff;
+  color: #0a0a0a;
+  font-weight: 600;
+}
+.jk-enquiries-screen .tablenav .button:hover,
+.jk-enquiries-screen .search-box .button:hover {
+  border-color: #0a0a0a;
+}
+.jk-enquiries-screen .tablenav select {
+  min-height: 36px;
+  border-color: #d4d4d4;
+  border-radius: 10px;
+}
+.jk-enquiries-screen .tablenav .tablenav-pages .button {
+  min-width: 36px;
+}
+
+/* The table as a card. */
+.jk-enquiries-screen .wp-list-table {
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+.jk-enquiries-screen .wp-list-table thead th,
+.jk-enquiries-screen .wp-list-table thead td,
+.jk-enquiries-screen .wp-list-table tfoot th,
+.jk-enquiries-screen .wp-list-table tfoot td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-color: #e5e5e5;
+  background: #fafafa;
+  color: #737373;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.jk-enquiries-screen .wp-list-table thead th a,
+.jk-enquiries-screen .wp-list-table tfoot th a {
+  color: #737373;
+}
+.jk-enquiries-screen .wp-list-table tbody tr {
+  background: #fff;
+}
+.jk-enquiries-screen .wp-list-table.striped > tbody > :nth-child(odd) {
+  background: #fff;
+}
+.jk-enquiries-screen .wp-list-table tbody td,
+.jk-enquiries-screen .wp-list-table tbody th {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-top: 1px solid #f0f0f0;
+  vertical-align: top;
+  box-shadow: none;
+}
+.jk-enquiries-screen .wp-list-table tbody tr:hover {
+  background: #fafafa;
+}
+.jk-enquiries-screen .wp-list-table .check-column {
+  padding-top: 16px;
+}
+.jk-enquiries-screen .column-jk_from {
+  width: 26%;
+}
+.jk-enquiries-screen .column-jk_topic {
+  width: 13%;
+}
+.jk-enquiries-screen .column-jk_mail {
+  width: 12%;
+}
+.jk-enquiries-screen .column-jk_received {
+  width: 14%;
+}
+
+/* Cell contents. */
+.jk-enquiries-screen .jk-enquiry-name {
+  display: block;
+  color: #0a0a0a;
+  font-family: var(--tw-font-display);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.jk-enquiries-screen a.jk-enquiry-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.jk-enquiries-screen .jk-enquiry-contact {
+  display: block;
+  margin-top: 3px;
+  color: #737373;
+  font-size: 12px;
+  word-break: break-all;
+}
+.jk-enquiries-screen .row-actions {
+  padding-top: 6px;
+  font-size: 12px;
+}
+.jk-enquiries-screen .row-actions a {
+  color: #404040;
+  font-weight: 600;
+}
+.jk-enquiries-screen .row-actions .trash a,
+.jk-enquiries-screen .row-actions .delete a {
+  color: #b32d2e;
+}
+.jk-enquiries-screen .jk-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #0a0a0a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.jk-enquiries-screen .jk-enquiry-excerpt {
+  color: #404040;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.jk-enquiries-screen .jk-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.jk-enquiries-screen .jk-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.jk-enquiries-screen .jk-status.is-ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+.jk-enquiries-screen .jk-status.is-warn {
+  background: #fffbeb;
+  color: #92400e;
+}
+.jk-enquiries-screen .jk-enquiry-time {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #0a0a0a;
+  font-size: 13px;
+  font-weight: 600;
+}
+.jk-enquiries-screen .jk-enquiry-time span {
+  color: #a3a3a3;
+  font-size: 11px;
+  font-weight: 400;
+}
+.jk-enquiries-screen .wp-list-table .no-items td {
+  padding: 40px 16px;
+  color: #737373;
+  text-align: center;
+}
+
+/* Phones: WordPress stacks the columns under the name; keep that readable. */
+@media (max-width: 782px) {
+  .jk-enquiries-screen .wp-list-table tbody td {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-top: 0;
+  }
+  .jk-enquiries-screen .wp-list-table tbody tr {
+    border-top: 1px solid #f0f0f0;
+  }
+}

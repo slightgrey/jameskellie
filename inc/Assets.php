@@ -90,8 +90,9 @@ final class Assets {
 		$is_jk   = str_contains( $hook, 'jk-' );
 		$is_page = $screen && 'page' === $screen->post_type && in_array( $hook, [ 'post.php', 'post-new.php' ], true );
 
-		// Single enquiry (Admin\EnquiryView): only the admin styles, no media or field scripts.
-		if ( $screen && Enquiries::POST_TYPE === $screen->post_type && 'post.php' === $hook ) {
+		// Enquiries list and single enquiry (Admin\EnquiryList, Admin\EnquiryView): only the admin
+		// styles, no media or field scripts.
+		if ( $screen && Enquiries::POST_TYPE === $screen->post_type && in_array( $hook, [ 'post.php', 'edit.php' ], true ) ) {
 			foreach ( self::entry_css( 'src/admin/metabox.js' ) as $i => $css ) {
 				wp_enqueue_style( 'jk-enquiry-' . $i, get_theme_file_uri( 'dist/' . $css ), [], null ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- hashed filename.
 			}

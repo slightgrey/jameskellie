@@ -23,8 +23,6 @@ final class Enquiries {
 	public function hooks(): void {
 		add_action( 'init', [ $this, 'register' ] );
 		add_action( 'add_meta_boxes_' . self::POST_TYPE, [ $this, 'meta_box' ] );
-		add_filter( 'manage_' . self::POST_TYPE . '_posts_columns', [ $this, 'columns' ] );
-		add_action( 'manage_' . self::POST_TYPE . '_posts_custom_column', [ $this, 'column' ], 10, 2 );
 	}
 
 	/**
@@ -79,35 +77,5 @@ final class Enquiries {
 	 */
 	public function meta_box(): void {
 		remove_meta_box( 'submitdiv', self::POST_TYPE, 'side' );
-	}
-
-	/**
-	 * List columns.
-	 *
-	 * @param array $columns Columns.
-	 */
-	public function columns( array $columns ): array {
-		return [
-			'cb'       => $columns['cb'] ?? '',
-			'title'    => __( 'Enquiry', 'jameskellie' ),
-			'jk_topic' => __( 'Topic', 'jameskellie' ),
-			'jk_email' => __( 'Email', 'jameskellie' ),
-			'date'     => $columns['date'] ?? __( 'Date', 'jameskellie' ),
-		];
-	}
-
-	/**
-	 * Column values.
-	 *
-	 * @param string $column  Column key.
-	 * @param int    $post_id Post ID.
-	 */
-	public function column( string $column, int $post_id ): void {
-		$data = (array) get_post_meta( $post_id, self::META, true );
-		if ( 'jk_topic' === $column ) {
-			echo esc_html( (string) ( $data['topic'] ?? '' ) );
-		} elseif ( 'jk_email' === $column ) {
-			echo esc_html( (string) ( $data['email'] ?? '' ) );
-		}
 	}
 }
