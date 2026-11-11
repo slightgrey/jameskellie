@@ -27,7 +27,33 @@ final class Menu {
 	 */
 	public function hooks(): void {
 		add_action( 'admin_menu', [ $this, 'register' ] );
+		add_action( 'admin_menu', [ $this, 'enquiries_last' ], 999 );
 		add_action( 'admin_head', [ $this, 'fonts' ] );
+	}
+
+	/**
+	 * WordPress adds the Enquiries post type (show_in_menu => jk-general) before the
+	 * settings pages, and the top-level link always opens the first submenu item.
+	 * Move Enquiries to the end so General comes first and the top-level link opens it.
+	 */
+	public function enquiries_last(): void {
+		global $submenu;
+
+		if ( empty( $submenu[ self::PARENT ] ) || ! is_array( $submenu[ self::PARENT ] ) ) {
+			return;
+		}
+
+		$slug  = 'edit.php?post_type=' . Enquiries::POST_TYPE;
+		$items = [];
+		$moved = [];
+		foreach ( $submenu[ self::PARENT ] as $item ) {
+			if ( isset( $item[2] ) && $slug === $item[2] ) {
+				$moved[] = $item;
+			} else {
+				$items[] = $item;
+			}
+		}
+		$submenu[ self::PARENT ] = array_merge( $items, $moved ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- reordering our own submenu.
 	}
 
 	/**
