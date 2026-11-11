@@ -90,7 +90,7 @@ final class Minify {
 		}
 
 		// Inline JS: line-level only (see self::js()), so line breaks and their meaning stay.
-		$js = preg_replace_callback(
+		$js  = preg_replace_callback(
 			'#(<script\b([^>]*)>)(.*?)(</script\s*>)#is',
 			static function ( array $m ): string {
 				return $m[1] . self::js( $m[2], $m[3] ) . $m[4];
