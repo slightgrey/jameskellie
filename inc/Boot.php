@@ -30,10 +30,18 @@ final class Boot {
 	 * Print the boot JSON for React.
 	 */
 	public static function print_data(): void {
-		$data = [
+		$data    = [
 			'site'  => self::site(),
 			'route' => self::route(),
 		];
+		$preview = self::preview_key();
+		if ( '' !== $preview ) {
+			// Admin preview iframe: the section's saved data, shown even while it is switched off.
+			$data['preview'] = [
+				'key'  => $preview,
+				'data' => self::section_data( $preview, Settings::section( $preview ) ),
+			];
+		}
 		echo '<script id="jk-boot" type="application/json">' . wp_json_encode( $data, self::JSON_FLAGS ) . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- hex-encoded JSON.
 	}
 
@@ -320,19 +328,79 @@ final class Boot {
 	private static function home_sections(): array {
 		$out = [];
 		foreach ( (array) Settings::get( 'layout.order', [] ) as $key ) {
-			$key = (string) $key;
-			if ( ! Settings::get( $key . '.enabled' ) ) {
-				continue;
-			}
-			$method = 'section_' . $key;
-			if ( method_exists( self::class, $method ) ) {
+			$key  = (string) $key;
+			$data = Settings::get( $key . '.enabled' ) ? self::section_data( $key, Settings::section( $key ) ) : null;
+			if ( null !== $data ) {
 				$out[] = [
 					'key'  => $key,
-					'data' => self::$method( Settings::section( $key ) ),
+					'data' => $data,
 				];
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * Render-ready data for one Home section from (merged) values.
+	 * Shared by the front page and the admin preview, so both build it the same way.
+	 *
+	 * @param string $key    Section key.
+	 * @param array  $values Section values, merged with defaults.
+	 */
+	public static function section_data( string $key, array $values ): ?array {
+		$method = 'section_' . $key;
+		return method_exists( self::class, $method ) ? self::$method( $values ) : null;
+	}
+
+	/* --------------------------------------------------------------- preview */
+
+	/**
+	 * Home sections the admin can preview. Hero first; add keys here as previews are added.
+	 */
+	public const PREVIEW_SECTIONS = [ 'hero' ];
+
+	/**
+	 * True while the REST preview builds section data (see link()).
+	 *
+	 * @var bool
+	 */
+	private static bool $previewing = false;
+
+	/**
+	 * The section being previewed (?jk_preview=hero), for administrators only; '' otherwise.
+	 */
+	public static function preview_key(): string {
+		if ( ! isset( $_GET['jk_preview'] ) || ! current_user_can( 'manage_options' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display mode, capability-checked.
+			return '';
+		}
+		$key = sanitize_key( wp_unslash( $_GET['jk_preview'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- see above.
+		return in_array( $key, self::PREVIEW_SECTIONS, true ) ? $key : '';
+	}
+
+	/**
+	 * Preview iframe request: no admin bar, never indexed or cached.
+	 */
+	public static function preview_mode(): void {
+		if ( '' === self::preview_key() ) {
+			return;
+		}
+		add_filter( 'show_admin_bar', '__return_false' );
+		add_filter( 'wp_robots', 'wp_robots_no_robots' );
+		nocache_headers();
+	}
+
+	/**
+	 * Preview data for unsaved values (REST). Sanitised like a save, never stored.
+	 *
+	 * @param string $key   Section key.
+	 * @param array  $input Raw values from the settings form.
+	 */
+	public static function preview_data( string $key, array $input ): ?array {
+		$clean            = Admin\Sanitizer::section( $key, $input, Settings::raw( $key ) );
+		self::$previewing = true;
+		$data             = self::section_data( $key, Settings::merge( $key, $clean ) );
+		self::$previewing = false;
+		return $data;
 	}
 
 	/**
@@ -618,7 +686,8 @@ final class Boot {
 	 * @param string $url URL.
 	 */
 	public static function link( string $url ): string {
-		if ( str_starts_with( $url, '#' ) && ! is_front_page() ) {
+		// The REST preview runs outside the front page but renders Home sections, so keep #links.
+		if ( str_starts_with( $url, '#' ) && ! is_front_page() && ! self::$previewing ) {
 			return home_url( '/' ) . $url;
 		}
 		return $url;

@@ -6,7 +6,7 @@ import Cta from '../sections/Cta';
 import SkillsSection from '../sections/SkillsSection';
 import ContactSection from '../sections/ContactSection';
 
-const SECTIONS = {
+export const SECTIONS = {
   hero: Hero,
   stats: Stats,
   services: ServicesSection,

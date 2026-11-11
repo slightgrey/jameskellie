@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cfg, { api } from './api';
 import { FieldContext, FieldTable } from './fields';
+import Preview from './Preview';
 
 const DISPLAY = { fontFamily: "'Roboto Condensed','Arial Narrow',sans-serif" };
 
@@ -336,6 +337,8 @@ export default function AdminApp() {
         <Sidebar current={section} enabled={enabled} onSelect={select} />
 
         <div className="tw:min-w-0">
+          {values && cfg.preview?.sections?.includes(section) && <Preview key={section} section={section} values={values} />}
+
           <section className="tw:overflow-hidden tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:shadow-sm">
             <header className="tw:flex tw:flex-wrap tw:items-start tw:justify-between tw:gap-4 tw:border-b tw:border-neutral-200 tw:px-8 tw:py-7">
               <div className="tw:flex tw:items-start tw:gap-4">

@@ -12,6 +12,7 @@ namespace JK\Rest;
 
 use JK\Admin\ImportExport;
 use JK\Admin\Menu;
+use JK\Boot;
 use JK\Schema;
 use JK\Settings;
 use WP_Error;
@@ -74,6 +75,23 @@ final class SettingsController {
 				'callback'            => [ $this, 'reset' ],
 				'permission_callback' => [ $this, 'can_manage' ],
 				'args'                => $section,
+			]
+		);
+
+		register_rest_route(
+			self::NS,
+			'/admin/preview/(?P<section>[a-z]+)',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'preview' ],
+				'permission_callback' => [ $this, 'can_manage' ],
+				'args'                => [
+					'section' => [
+						'type'              => 'string',
+						'required'          => true,
+						'validate_callback' => static fn( $value ): bool => in_array( $value, Boot::PREVIEW_SECTIONS, true ),
+					],
+				],
 			]
 		);
 
@@ -146,6 +164,21 @@ final class SettingsController {
 		Settings::flush();
 
 		return new WP_REST_Response( self::payload( $section ), 200 );
+	}
+
+	/**
+	 * Render data for unsaved values, for the live preview. Nothing is saved.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function preview( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		$values = is_array( $params ) ? ( $params['values'] ?? null ) : null;
+		if ( ! is_array( $values ) ) {
+			return new WP_Error( 'jk_bad_values', __( 'Nothing to preview.', 'jameskellie' ), [ 'status' => 400 ] );
+		}
+		return new WP_REST_Response( [ 'data' => Boot::preview_data( (string) $request['section'], $values ) ], 200 );
 	}
 
 	/**

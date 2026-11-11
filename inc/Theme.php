@@ -21,6 +21,8 @@ final class Theme {
 		add_action( 'after_setup_theme', [ $this, 'setup' ] );
 		add_action( 'init', [ Admin\SettingsRegistry::class, 'register' ] );
 		add_filter( 'body_class', [ $this, 'body_class' ] );
+		// Before template_redirect, where the admin bar is set up.
+		add_action( 'wp', [ Boot::class, 'preview_mode' ] );
 
 		( new Assets() )->hooks();
 		( new Performance() )->hooks();

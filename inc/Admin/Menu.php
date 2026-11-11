@@ -196,6 +196,11 @@ final class Menu {
 			'enabled'    => self::enabled(),
 			'adminUrl'   => admin_url( 'admin.php' ),
 			'homeUrl'    => home_url( '/' ),
+			// Live preview: sections that have one, and the iframe URL ({key} is replaced).
+			'preview'    => [
+				'sections' => \JK\Boot::PREVIEW_SECTIONS,
+				'url'      => add_query_arg( 'jk_preview', '{key}', home_url( '/' ) ),
+			],
 			'enquiries'  => [
 				'url'   => admin_url( 'edit.php?post_type=' . Enquiries::POST_TYPE ),
 				'count' => (int) ( $enquiries->private ?? 0 ),
