@@ -21,6 +21,8 @@ React version of the `jameskellie-theme` PHP theme. It uses **the same data** (`
 
 - Contact form (`jk/v1/contact`, public): REST nonce, honeypot, minimum fill time, captcha, and two per-IP limits per 10 min: 5 sent, 15 attempts (attempts stop endless captcha retries). Fields are length-capped; the "sent from" URL is kept only if it is this site (`own_url()`).
 - Enquiries (`jk_enquiry`) hold personal data: every capability maps to `manage_options` (administrators only, not Editors).
+- Enquiry search: `post_content` holds a plain-text index (`Enquiries::search_text()`: name, email, phone with and without spaces, topic, message), so core admin search covers every field. `_jk_enquiry_topic` / `_jk_enquiry_mail` meta drive the list filters. Older enquiries are indexed once on first list load (option `jk_enquiry_index`).
+- Logged-out visitors cannot list usernames (`inc/UserEnumeration.php`): no `/wp/v2/users` REST routes, 404 for `?author=` and author archives, no users sitemap, one generic login error. Filter `jk_block_user_enumeration` turns it off.
 - Front-end responses send `X-Frame-Options: SAMEORIGIN`, `nosniff` and `Referrer-Policy` (`inc/SecurityHeaders.php`, filter `jk_security_headers`).
 - Boot data and SPA JSON never contain captcha secrets or Custom Code. Settings exports DO contain the captcha secret keys: treat export files as private.
 

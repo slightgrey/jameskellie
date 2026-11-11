@@ -31,6 +31,7 @@ final class Theme {
 		( new Seo() )->hooks();
 		( new Spa() )->hooks();
 		( new SecurityHeaders() )->hooks();
+		( new UserEnumeration() )->hooks();
 		( new Enquiries() )->hooks();
 		( new Rest\ContactController() )->hooks();
 		( new Rest\SettingsController() )->hooks();

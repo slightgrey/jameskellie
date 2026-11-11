@@ -34,6 +34,117 @@ final class EnquiryList {
 		add_action( 'all_admin_notices', [ $this, 'header' ] );
 		add_filter( "bulk_actions-edit-{$type}", [ $this, 'bulk_actions' ] );
 		add_filter( "views_edit-{$type}", [ $this, 'views' ] );
+		add_action( 'load-edit.php', [ $this, 'backfill' ] );
+		add_action( 'restrict_manage_posts', [ $this, 'filters' ], 10, 2 );
+		add_action( 'pre_get_posts', [ $this, 'apply_filters' ] );
+	}
+
+	/**
+	 * Index enquiries saved before search indexing existed (once; new ones are indexed on save).
+	 */
+	public function backfill(): void {
+		if ( ! self::is_list_screen() || '2' === get_option( 'jk_enquiry_index' ) || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		$ids = get_posts(
+			[
+				'post_type'        => Enquiries::POST_TYPE,
+				'post_status'      => 'any',
+				'posts_per_page'   => -1,
+				'fields'           => 'ids',
+				'suppress_filters' => true,
+				'meta_query'       => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- one-time admin backfill.
+					[
+						'key'     => Enquiries::MAIL_META,
+						'compare' => 'NOT EXISTS',
+					],
+				],
+			]
+		);
+		foreach ( $ids as $id ) {
+			$data = (array) get_post_meta( (int) $id, Enquiries::META, true );
+			wp_update_post(
+				[
+					'ID'           => (int) $id,
+					'post_content' => Enquiries::search_text( $data ),
+				]
+			);
+			Enquiries::store_filters( (int) $id, $data );
+		}
+		update_option( 'jk_enquiry_index', '2', false );
+	}
+
+	/**
+	 * Topic and email-status dropdowns beside the date filter.
+	 *
+	 * @param string $post_type Post type of the list.
+	 * @param string $which     top|bottom.
+	 */
+	public function filters( string $post_type, string $which = 'top' ): void {
+		if ( Enquiries::POST_TYPE !== $post_type || 'top' !== $which ) {
+			return;
+		}
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only list filters.
+		$topic = isset( $_GET['jk_topic'] ) ? sanitize_text_field( wp_unslash( $_GET['jk_topic'] ) ) : '';
+		$mail  = isset( $_GET['jk_mail'] ) ? sanitize_key( wp_unslash( $_GET['jk_mail'] ) ) : '';
+		// phpcs:enable
+
+		// Topics from the Contact settings, plus any older ones still on saved enquiries.
+		global $wpdb;
+		$saved  = (array) $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value <> ''", Enquiries::TOPIC_META ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- small admin-only lookup.
+		$topics = array_values( array_unique( array_merge( array_map( 'strval', (array) \JK\Settings::get( 'contact.topics', [] ) ), array_map( 'strval', $saved ) ) ) );
+
+		echo '<label class="screen-reader-text" for="jk-filter-topic">' . esc_html__( 'Filter by topic', 'jameskellie' ) . '</label>';
+		echo '<select name="jk_topic" id="jk-filter-topic"><option value="">' . esc_html__( 'All topics', 'jameskellie' ) . '</option>';
+		foreach ( $topics as $t ) {
+			printf( '<option value="%s"%s>%s</option>', esc_attr( $t ), selected( $topic, $t, false ), esc_html( $t ) );
+		}
+		echo '</select>';
+
+		echo '<label class="screen-reader-text" for="jk-filter-mail">' . esc_html__( 'Filter by email status', 'jameskellie' ) . '</label>';
+		echo '<select name="jk_mail" id="jk-filter-mail">';
+		foreach (
+			[
+				''     => __( 'Any email status', 'jameskellie' ),
+				'sent' => __( 'Delivered', 'jameskellie' ),
+				'fail' => __( 'Not delivered', 'jameskellie' ),
+			] as $value => $label
+		) {
+			printf( '<option value="%s"%s>%s</option>', esc_attr( $value ), selected( $mail, $value, false ), esc_html( $label ) );
+		}
+		echo '</select>';
+	}
+
+	/**
+	 * Apply the Topic and Email filters to the list query.
+	 *
+	 * @param \WP_Query $query Query.
+	 */
+	public function apply_filters( \WP_Query $query ): void {
+		if ( ! is_admin() || ! $query->is_main_query() || Enquiries::POST_TYPE !== $query->get( 'post_type' ) ) {
+			return;
+		}
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only list filters.
+		$topic = isset( $_GET['jk_topic'] ) ? sanitize_text_field( wp_unslash( $_GET['jk_topic'] ) ) : '';
+		$mail  = isset( $_GET['jk_mail'] ) ? sanitize_key( wp_unslash( $_GET['jk_mail'] ) ) : '';
+		// phpcs:enable
+
+		$meta = [];
+		if ( '' !== $topic ) {
+			$meta[] = [
+				'key'   => Enquiries::TOPIC_META,
+				'value' => $topic,
+			];
+		}
+		if ( in_array( $mail, [ 'sent', 'fail' ], true ) ) {
+			$meta[] = [
+				'key'   => Enquiries::MAIL_META,
+				'value' => 'sent' === $mail ? '1' : '0',
+			];
+		}
+		if ( $meta ) {
+			$query->set( 'meta_query', array_merge( [ 'relation' => 'AND' ], $meta ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- admin list filter.
+		}
 	}
 
 	/**

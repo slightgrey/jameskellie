@@ -74,16 +74,57 @@ final class Enquiries {
 	public static function store( array $data, bool $sent ): int {
 		$id = wp_insert_post(
 			[
-				'post_type'   => self::POST_TYPE,
-				'post_status' => 'private',
-				'post_title'  => sprintf( '%s — %s', $data['name'], wp_date( 'j M Y, g:ia' ) ),
+				'post_type'    => self::POST_TYPE,
+				'post_status'  => 'private',
+				'post_title'   => sprintf( '%s — %s', $data['name'], wp_date( 'j M Y, g:ia' ) ),
+				// Plain-text search index (WordPress's admin search covers title and content).
+				'post_content' => self::search_text( $data ),
 			]
 		);
 		if ( ! $id || is_wp_error( $id ) ) {
 			return 0;
 		}
-		update_post_meta( $id, self::META, wp_slash( $data + [ 'mail_sent' => $sent ] ) );
+		$data += [ 'mail_sent' => $sent ];
+		update_post_meta( $id, self::META, wp_slash( $data ) );
+		self::store_filters( (int) $id, $data );
 		return (int) $id;
+	}
+
+	/** Meta key for the topic, for the list's Topic filter. */
+	public const TOPIC_META = '_jk_enquiry_topic';
+
+	/** Meta key for '1' / '0' email delivered, for the list's Email filter. */
+	public const MAIL_META = '_jk_enquiry_mail';
+
+	/**
+	 * Plain-text index of an enquiry for the admin search: name, email, phone (as typed and as
+	 * digits only, so "0411 644" and "0411644" both match), topic and message.
+	 * Never shown anywhere; the post type is private and not public or in the REST API.
+	 *
+	 * @param array $data Enquiry fields.
+	 */
+	public static function search_text( array $data ): string {
+		$phone = (string) ( $data['phone'] ?? '' );
+		$parts = [
+			(string) ( $data['name'] ?? '' ),
+			(string) ( $data['email'] ?? '' ),
+			$phone,
+			(string) preg_replace( '/\D/', '', $phone ),
+			(string) ( $data['topic'] ?? '' ),
+			(string) ( $data['message'] ?? '' ),
+		];
+		return sanitize_textarea_field( implode( "\n", array_filter( $parts, static fn( string $p ): bool => '' !== trim( $p ) ) ) );
+	}
+
+	/**
+	 * Separate meta for the list filters (the main meta is one array, which cannot be filtered on).
+	 *
+	 * @param int   $id   Enquiry ID.
+	 * @param array $data Enquiry fields, with mail_sent.
+	 */
+	public static function store_filters( int $id, array $data ): void {
+		update_post_meta( $id, self::TOPIC_META, sanitize_text_field( (string) ( $data['topic'] ?? '' ) ) );
+		update_post_meta( $id, self::MAIL_META, ! empty( $data['mail_sent'] ) ? '1' : '0' );
 	}
 
 	/**
