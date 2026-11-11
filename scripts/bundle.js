@@ -1,4 +1,4 @@
-// Builds the assets and packages the theme for upload: jameskellie-vX.Y.Z.zip
+// Builds the assets and packages the theme for upload: release/jameskellie-vX.Y.Z.zip
 //   npm run bundle
 // The zip holds only what the live site needs; src/, node_modules/, vendor/ (Composer is
 // dev-only: functions.php has its own autoloader), docs and scripts stay out.
@@ -20,7 +20,9 @@ const version = versionMatch ? versionMatch[1].trim() : '0.0.0';
 // (/wp-content/themes/jameskellie/dist/) points there.
 const THEME_DIR = 'jameskellie';
 const zipName = `${THEME_DIR}-v${version}.zip`;
-const zipPath = path.join(ROOT, zipName);
+// Zips go in release/ (gitignored), not the theme root.
+const RELEASE_DIR = path.join(ROOT, 'release');
+const zipPath = path.join(RELEASE_DIR, zipName);
 
 console.log(`\n📦 Bundling James Kellie (React) v${version}...\n`);
 
@@ -50,11 +52,12 @@ if (!fs.existsSync(path.join(ROOT, 'dist/.vite/manifest.json'))) {
   process.exit(1);
 }
 
-// 5. Remove an old zip of the same version.
+// 5. Make release/ if needed, and remove an old zip of the same version.
+fs.mkdirSync(RELEASE_DIR, { recursive: true });
 if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
 // 6. Create the zip.
-console.log(`\n  → Creating ${zipName}...`);
+console.log(`\n  → Creating release/${zipName}...`);
 
 const output = fs.createWriteStream(zipPath);
 const archive = archiver('zip', { zlib: { level: 9 } });
@@ -68,7 +71,7 @@ archive.on('error', (err) => {
 
 output.on('close', () => {
   const kb = (archive.pointer() / 1024).toFixed(1);
-  console.log(`\n✅ Done! ${zipName} (${kb} KB, ${files} files)\n`);
+  console.log(`\n✅ Done! release/${zipName} (${kb} KB, ${files} files)\n`);
   console.log('   Install via WordPress Admin → Appearance → Themes → Add New → Upload Theme');
   console.log('   (or upload the jameskellie folder over SFTP to wp-content/themes/).\n');
 });
