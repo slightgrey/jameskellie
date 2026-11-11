@@ -87,7 +87,7 @@ final class Menu {
 	 */
 	public function fonts(): void {
 		$screen = get_current_screen();
-		if ( $screen && ( str_contains( $screen->id, 'jk-' ) || 'page' === $screen->post_type ) ) {
+		if ( $screen && ( str_contains( $screen->id, 'jk-' ) || in_array( $screen->post_type, [ 'page', Enquiries::POST_TYPE ], true ) ) ) {
 			echo '<style id="jk-admin-fonts">' . Assets::font_faces() . "</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from constants and escaped URLs.
 		}
 	}

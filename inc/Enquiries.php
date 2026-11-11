@@ -75,43 +75,10 @@ final class Enquiries {
 	}
 
 	/**
-	 * Read-only details box.
+	 * The enquiry screen is read-only: no Publish box. The view itself is Admin\EnquiryView.
 	 */
 	public function meta_box(): void {
-		add_meta_box( 'jk-enquiry', __( 'Enquiry', 'jameskellie' ), [ $this, 'render' ], self::POST_TYPE, 'normal', 'high' );
 		remove_meta_box( 'submitdiv', self::POST_TYPE, 'side' );
-	}
-
-	/**
-	 * Render the fields.
-	 *
-	 * @param \WP_Post $post Enquiry.
-	 */
-	public function render( \WP_Post $post ): void {
-		$data   = (array) get_post_meta( $post->ID, self::META, true );
-		$labels = [
-			'topic'     => __( 'Topic', 'jameskellie' ),
-			'name'      => __( 'Name', 'jameskellie' ),
-			'email'     => __( 'Email', 'jameskellie' ),
-			'phone'     => __( 'Phone', 'jameskellie' ),
-			'message'   => __( 'Message', 'jameskellie' ),
-			'page'      => __( 'Sent from', 'jameskellie' ),
-			'mail_sent' => __( 'Email delivered', 'jameskellie' ),
-		];
-		echo '<table class="form-table" role="presentation"><tbody>';
-		foreach ( $labels as $key => $label ) {
-			$value = $data[ $key ] ?? '';
-			if ( 'mail_sent' === $key ) {
-				$value = $value ? __( 'Yes', 'jameskellie' ) : __( 'No — check the mail setup', 'jameskellie' );
-			}
-			if ( 'email' === $key && $value ) {
-				$value = sprintf( '<a href="mailto:%1$s">%1$s</a>', esc_html( $value ) );
-				printf( '<tr><th scope="row">%s</th><td>%s</td></tr>', esc_html( $label ), wp_kses( $value, [ 'a' => [ 'href' => true ] ] ) );
-				continue;
-			}
-			printf( '<tr><th scope="row">%s</th><td>%s</td></tr>', esc_html( $label ), nl2br( esc_html( (string) $value ) ) );
-		}
-		echo '</tbody></table>';
 	}
 
 	/**

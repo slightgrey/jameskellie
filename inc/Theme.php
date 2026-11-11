@@ -38,6 +38,7 @@ final class Theme {
 		if ( is_admin() ) {
 			( new Admin\Menu() )->hooks();
 			( new Admin\AppointmentMetaBox() )->hooks();
+			( new Admin\EnquiryView() )->hooks();
 		}
 	}
 
