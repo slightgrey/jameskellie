@@ -180,12 +180,17 @@ final class Menu {
 
 		$fields       = [];
 		$field_groups = [];
+		$columns      = [];
 		$all          = Schema::all();
 		foreach ( Schema::option_sections() as $section ) {
 			$fields[ $section ] = Schema::fields( $section );
 			// Optional display groups (e.g. General → Header, Contact details, Footer…).
 			if ( ! empty( $all[ $section ]['groups'] ) ) {
 				$field_groups[ $section ] = $all[ $section ]['groups'];
+			}
+			// Optional multi-column layout (e.g. Performance → 2).
+			if ( ! empty( $all[ $section ]['columns'] ) ) {
+				$columns[ $section ] = (int) $all[ $section ]['columns'];
 			}
 		}
 
@@ -200,6 +205,7 @@ final class Menu {
 			'groups'      => $groups,
 			'fields'      => $fields,
 			'fieldGroups' => (object) $field_groups,
+			'columns'     => (object) $columns,
 			'enabled'     => self::enabled(),
 			'adminUrl'    => admin_url( 'admin.php' ),
 			'homeUrl'     => home_url( '/' ),

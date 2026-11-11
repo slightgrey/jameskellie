@@ -579,8 +579,10 @@ return [
 		],
 	],
 	'performance' => [
-		'title'  => 'Performance',
-		'fields' => [
+		'title'   => 'Performance',
+		// Settings screen layout: two columns of fields on wide screens (React admin only).
+		'columns' => 2,
+		'fields'  => [
 			[
 				'key'   => 'minify_html',
 				'type'  => 'toggle',

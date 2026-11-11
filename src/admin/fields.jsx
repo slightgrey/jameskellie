@@ -25,7 +25,7 @@ function FieldRow({ field, base, values, onChange }) {
   const label = field.label ?? field.key;
   const wide = WIDE_TYPES.includes(field.type);
   return (
-    <div className={`jk-field-row tw:grid tw:gap-x-10 tw:gap-y-3 tw:py-6 ${wide ? '' : COLUMNS}`}>
+    <div className={`jk-field-row tw:grid tw:gap-x-10 tw:gap-y-3 tw:py-6 ${wide ? 'is-wide' : COLUMNS}`} data-type={field.type}>
       <div className="tw:min-w-0">
         {GROUP_TYPES.includes(field.type) ? (
           <span className="tw:block tw:text-[13px] tw:font-semibold tw:text-neutral-900">{label}</span>
@@ -49,12 +49,14 @@ function FieldRow({ field, base, values, onChange }) {
  * compact: the fields column beside the live preview; admin.css (.jk-fields-compact) stacks
  * labels above inputs at ≥1280px.
  */
-export function FieldTable({ fields, values, onChange, base, compact = false, groups = null }) {
+export function FieldTable({ fields, values, onChange, base, compact = false, groups = null, columns = 1 }) {
   const shown = fields.filter((field) => visible(field, values));
   const rows = (list) => list.map((field) => <FieldRow key={field.key} field={field} base={base} values={values} onChange={onChange} />);
   const cls = `jk-fields${compact ? ' jk-fields-compact' : ''}`;
 
   if (!groups || !Object.keys(groups).length) {
+    // columns: 2 → side by side on wide screens (admin.css .jk-fields-cols-2); wide fields span both.
+    if (columns === 2 && !compact) return <div className={`${cls} jk-fields-cols-2`}>{rows(shown)}</div>;
     return <div className={`${cls} tw:divide-y tw:divide-neutral-200`}>{rows(shown)}</div>;
   }
 

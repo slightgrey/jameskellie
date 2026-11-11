@@ -107,12 +107,15 @@ export function headerOffset() {
 /** Scroll to #id (or the top), offsetting upward scrolls by the sticky header. */
 export function scrollToHash(hash, smooth) {
   const id = decodeURIComponent((hash || '').slice(1));
-  const el = id ? document.getElementById(id) : null;
   const behavior = smooth && !prefersReducedMotion() ? 'smooth' : 'auto';
-  if (!el) {
-    if (!id || id === 'top') window.scrollTo({ top: 0, behavior });
+  // No hash, or #top, means the very top. (#top is the header itself, which is sticky, so
+  // measuring it while scrolled would give the current position and nothing would happen.)
+  if (!id || id === 'top') {
+    window.scrollTo({ top: 0, behavior });
     return;
   }
+  const el = document.getElementById(id);
+  if (!el) return;
   const y = el.getBoundingClientRect().top + window.scrollY;
   // The sticky header reappears when scrolling up, so only offset upward scrolls.
   const offset = y < window.scrollY ? headerOffset() : 0;
