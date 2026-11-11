@@ -1,0 +1,8 @@
+/node_modules/
+/vendor/
+/dist/
+/hot
+.DS_Store
+Thumbs.db
+*.log
+.phpcs-cache

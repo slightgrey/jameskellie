@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<ruleset name="jameskellie">
+	<description>WordPress Coding Standards for the James Kellie theme.</description>
+
+	<file>inc</file>
+	<file>templates</file>
+	<file>config</file>
+	<file>.</file>
+
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/dist/*</exclude-pattern>
+	<exclude-pattern>/docs/*</exclude-pattern>
+	<exclude-pattern>/src/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="cache" value=".phpcs-cache"/>
+	<arg value="sp"/>
+	<arg name="colors"/>
+
+	<config name="minimum_wp_version" value="6.6"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress">
+		<!-- PSR-4 class files (inc/Admin/FieldRenderer.php) instead of class-*.php. -->
+		<exclude name="WordPress.Files.FileName"/>
+		<!-- PHP 8.1 OOP codebase: short arrays are fine. -->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+		<!-- Namespaced code: prefixes come from the JK namespace. -->
+		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
+		<exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+		<exclude name="Squiz.Commenting.FileComment.MissingPackageTag"/>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="jameskellie"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<!-- jk_ / JK\ are the prefixes fixed by the spec (HANDOFF §5.1); still enforced. -->
+		<exclude name="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed"/>
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="jk_"/>
+				<element value="JK\"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

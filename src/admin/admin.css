@@ -1,0 +1,518 @@
+/*
+ * Theme Settings admin.
+ * Tailwind utilities only (no Preflight, so the rest of wp-admin is untouched), prefixed
+ * `tw:` so they can't collide with WordPress classes, and !important because wp-admin's
+ * own CSS is unlayered and would otherwise win.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme) prefix(tw);
+@import "tailwindcss/utilities.css" layer(utilities) prefix(tw) important source(none);
+
+@source "../../inc/Admin";
+@source "./";
+
+@theme {
+  --color-ink: #0a0a0a;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Inter Tight", "Inter", system-ui, sans-serif;
+}
+
+/* ------------------------------------------------------------------ shell */
+
+.jk-admin {
+  max-width: 1320px;
+  margin: 20px 20px 0 2px;
+  font-family: var(--tw-font-sans);
+  color: #171717;
+}
+.jk-admin h1,
+.jk-admin h2,
+.jk-admin h3 {
+  font-family: var(--tw-font-display);
+  color: inherit;
+}
+.jk-admin a:focus,
+.jk-admin button:focus {
+  box-shadow: none;
+}
+.jk-admin :focus-visible {
+  outline: 2px solid #0a0a0a;
+  outline-offset: 2px;
+}
+.jk-admin .jk-dark :focus-visible {
+  outline-color: #fff;
+}
+/* `hidden` must win over the !important display utilities. For !important declarations
+   earlier cascade layers win, so this sits in `base` (before `utilities`). */
+@layer base {
+  .jk-admin [hidden],
+  .jk-fields [hidden] {
+    display: none !important;
+  }
+}
+/* WordPress moves notices to just after the first heading; give them room. */
+.jk-admin > .notice,
+.jk-admin > div.updated,
+.jk-admin > div.error {
+  margin: 0 0 16px;
+  border-radius: 10px;
+}
+
+.jk-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: #404040;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+.jk-nav-link:hover {
+  background: #fff;
+  color: #0a0a0a;
+}
+.jk-nav-link[aria-current="page"] {
+  background: #0a0a0a;
+  color: #fff;
+}
+.jk-nav-link .dashicons {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  color: currentColor;
+  opacity: 0.8;
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.jk-admin .jk-button,
+.jk-fields .jk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.jk-button-primary {
+  background: #0a0a0a;
+  color: #fff;
+}
+.jk-button-primary:hover,
+.jk-button-primary:focus {
+  background: #262626;
+  color: #fff;
+}
+.jk-button-ghost {
+  background: transparent;
+  border-color: #d4d4d4 !important;
+  color: #262626;
+}
+.jk-button-ghost:hover {
+  border-color: #0a0a0a !important;
+  color: #0a0a0a;
+}
+.jk-button-light {
+  background: #fff;
+  color: #0a0a0a;
+}
+.jk-button-light:hover {
+  background: #e5e5e5;
+  color: #0a0a0a;
+}
+.jk-button-outline-light {
+  border-color: #525252 !important;
+  color: #fff;
+}
+.jk-button-outline-light:hover {
+  border-color: #fff !important;
+  color: #fff;
+}
+.jk-button-danger:hover {
+  border-color: #b32d2e !important;
+  color: #b32d2e;
+}
+
+/* ------------------------------------------------------------------ fields */
+
+.jk-fields input[type="text"],
+.jk-fields input[type="number"],
+.jk-fields input[type="url"],
+.jk-fields input[type="email"],
+.jk-fields select,
+.jk-fields textarea {
+  width: 100%;
+  max-width: 640px;
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  color: #0a0a0a;
+  font-size: 14px;
+  line-height: 1.4;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.jk-fields input[type="number"] {
+  max-width: 120px;
+}
+.jk-fields select {
+  max-width: 320px;
+  padding-right: 32px;
+}
+.jk-fields textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+.jk-fields input[type="text"]:hover,
+.jk-fields input[type="number"]:hover,
+.jk-fields select:hover,
+.jk-fields textarea:hover {
+  border-color: #a3a3a3;
+}
+.jk-fields input[type="text"]:focus,
+.jk-fields input[type="number"]:focus,
+.jk-fields select:focus,
+.jk-fields textarea:focus {
+  border-color: #0a0a0a;
+  box-shadow: 0 0 0 3px rgb(10 10 10 / 0.1);
+  outline: none;
+}
+.jk-fields .code,
+.jk-fields input.code {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+}
+.jk-fields .description {
+  margin: 6px 0 0;
+  color: #737373;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.jk-fields .wp-editor-wrap {
+  max-width: 760px;
+}
+.jk-fields .wp-editor-container {
+  border-color: #d4d4d4;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Switch */
+.jk-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #525252;
+}
+.jk-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.jk-switch-ui {
+  position: relative;
+  flex: none;
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: #d4d4d4;
+  transition: background-color 0.15s;
+}
+.jk-switch-ui::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  transition: transform 0.15s;
+}
+.jk-switch input:checked + .jk-switch-ui {
+  background: #0a0a0a;
+}
+.jk-switch input:checked + .jk-switch-ui::after {
+  transform: translateX(18px);
+}
+.jk-switch input:focus-visible + .jk-switch-ui {
+  outline: 2px solid #0a0a0a;
+  outline-offset: 2px;
+}
+.jk-switch-text::before {
+  content: attr(data-off);
+}
+.jk-switch input:checked ~ .jk-switch-text::before {
+  content: attr(data-on);
+}
+
+/* Link */
+.jk-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 12px;
+  max-width: 640px;
+}
+.jk-link label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.jk-link label > span {
+  color: #737373;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Image */
+.jk-image {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.jk-image-preview:empty {
+  display: flex;
+  width: 88px;
+  height: 88px;
+  border: 1px dashed #d4d4d4;
+  border-radius: 12px;
+  background: #fafafa;
+}
+.jk-image-preview img {
+  display: block;
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+}
+
+/* Repeater */
+.jk-repeater {
+  max-width: 820px;
+}
+.jk-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.jk-row {
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  overflow: hidden;
+}
+.jk-row.is-dragging {
+  opacity: 0.45;
+}
+.jk-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 12px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+.jk-row.is-collapsed .jk-row-head {
+  border-bottom: 0;
+}
+.jk-row-toggle {
+  flex: 1;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #0a0a0a;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.jk-row-toggle::before {
+  content: "\f140";
+  display: inline-block;
+  margin-right: 6px;
+  font: normal 16px/1 dashicons;
+  vertical-align: -3px;
+  transition: transform 0.15s;
+}
+.jk-row.is-collapsed .jk-row-toggle::before {
+  transform: rotate(-90deg);
+}
+.jk-row-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+.jk-row.is-collapsed .jk-row-body {
+  display: none;
+}
+.jk-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.jk-sub-label {
+  color: #262626;
+  font-size: 12px;
+  font-weight: 600;
+}
+.jk-handle {
+  color: #a3a3a3;
+  cursor: grab;
+}
+.jk-move {
+  display: inline-flex;
+  gap: 2px;
+}
+.jk-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #525252;
+  cursor: pointer;
+}
+.jk-icon-btn:hover {
+  background: #ededed;
+  color: #0a0a0a;
+}
+.jk-icon-btn .dashicons {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+.jk-remove {
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: #a3a3a3;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 28px;
+  cursor: pointer;
+}
+.jk-remove:hover {
+  background: #fdecec;
+  color: #b32d2e;
+}
+.jk-repeater-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 0;
+  color: #737373;
+  font-size: 12px;
+}
+.jk-add {
+  border: 1px dashed #a3a3a3 !important;
+  background: #fff;
+  color: #0a0a0a;
+}
+.jk-add:hover {
+  border-style: solid !important;
+  border-color: #0a0a0a !important;
+}
+.jk-add:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Order */
+.jk-order {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 480px;
+  margin: 0;
+}
+.jk-order-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  cursor: grab;
+}
+.jk-order-item.is-dragging {
+  opacity: 0.45;
+}
+.jk-order-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #f5f5f5;
+  color: #525252;
+  font-size: 11px;
+  font-weight: 700;
+  counter-increment: jk-order;
+}
+.jk-order {
+  counter-reset: jk-order;
+}
+.jk-order-num::before {
+  content: counter(jk-order);
+}
+.jk-order-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+}
+.jk-order-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f5f5f5;
+  color: #737373;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Code editor */
+.jk-fields .CodeMirror {
+  height: 220px;
+  max-width: 820px;
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+}
+
+/* Meta box: tighten inside the postbox. */
+#jk-appointment .inside {
+  margin: 0;
+  padding: 4px 16px 16px;
+}
