@@ -34,13 +34,18 @@ export default function PreviewApp({ site, preview }) {
     return () => ro.disconnect();
   }, [preview.key]);
 
-  // A preview, not a page: links do nothing.
-  const block = (e) => {
+  // A preview, not a page: links do nothing, and the contact form never sends.
+  const blockLinks = (e) => {
     if (e.target instanceof Element && e.target.closest('a')) e.preventDefault();
+  };
+  const blockSubmit = (e) => {
+    // Capture phase + stopPropagation: the form's own onSubmit (which would POST) never runs.
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   return (
-    <div ref={rootRef} onClickCapture={block} className="jk-preview">
+    <div ref={rootRef} onClickCapture={blockLinks} onSubmitCapture={blockSubmit} className="jk-preview">
       <main id="main" data-spa-main="">
         {Section ? <Section data={data} site={site} /> : null}
         {/* The Hero portrait stands on the Stats rule, so show the rule it sits on. */}

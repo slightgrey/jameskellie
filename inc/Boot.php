@@ -355,9 +355,9 @@ final class Boot {
 	/* --------------------------------------------------------------- preview */
 
 	/**
-	 * Home sections the admin can preview. Hero first; add keys here as previews are added.
+	 * Home sections the admin can preview (all of them; each has a section_{key}() builder).
 	 */
-	public const PREVIEW_SECTIONS = [ 'hero' ];
+	public const PREVIEW_SECTIONS = [ 'hero', 'stats', 'services', 'experience', 'cta', 'skills', 'contact' ];
 
 	/**
 	 * True while the REST preview builds section data (see link()).
