@@ -2,8 +2,9 @@
 /**
  * Minifies front-end HTML output: strips comments and collapses whitespace.
  *
- * Inline <style> is lightly minified (comments, whitespace). Contents of <script>, <pre> and
- * <textarea> are left untouched, so the React boot JSON and JSON-LD are byte-for-byte intact.
+ * Inline <style> is lightly minified (comments, whitespace). Inline JavaScript only loses
+ * indentation, blank lines and whole-line comments (line breaks stay; see js()). JSON scripts
+ * (React boot data, JSON-LD), <pre> and <textarea> are left byte-for-byte intact.
  * Whitespace runs in markup collapse to a single space (never removed), so rendering is
  * identical. Switched with Theme Settings → Performance → "Minify HTML", or force it with the
  * `jk_minify_html` filter. Ported from the web-of-d theme.
@@ -88,6 +89,16 @@ final class Minify {
 			return $html;
 		}
 
+		// Inline JS: line-level only (see self::js()), so line breaks and their meaning stay.
+		$js = preg_replace_callback(
+			'#(<script\b([^>]*)>)(.*?)(</script\s*>)#is',
+			static function ( array $m ): string {
+				return $m[1] . self::js( $m[2], $m[3] ) . $m[4];
+			},
+			$out
+		);
+		$out = null === $js ? $out : $js;
+
 		// Swap whitespace-sensitive blocks for placeholders so they survive untouched.
 		$kept = [];
 		$out  = preg_replace_callback(
@@ -117,5 +128,42 @@ final class Minify {
 		);
 
 		return null === $out ? $html : trim( $out );
+	}
+
+	/**
+	 * Conservative inline-script minify: trim indentation, drop blank lines and whole-line
+	 * `//` comments (including `//# sourceURL=`). Line breaks are kept, so automatic
+	 * semicolon insertion and `return`/`throw` behave exactly as before.
+	 *
+	 * Skipped: external and non-JavaScript scripts (JSON boot data, JSON-LD, templates),
+	 * and code with template literals or backslash line continuations, where a line that
+	 * looks like a comment can be part of a string.
+	 *
+	 * @param string $attrs Attributes of the <script> tag.
+	 * @param string $code  Script contents.
+	 */
+	private static function js( string $attrs, string $code ): string {
+		if ( '' === trim( $code ) || preg_match( '/\ssrc\s*=/i', $attrs ) ) {
+			return $code;
+		}
+		if ( preg_match( '/\stype\s*=\s*["\']?([^"\'\s>]+)/i', $attrs, $type ) ) {
+			$js_types = [ 'text/javascript', 'application/javascript', 'module' ];
+			if ( ! in_array( strtolower( $type[1] ), $js_types, true ) ) {
+				return $code;
+			}
+		}
+		if ( str_contains( $code, '`' ) || preg_match( '/\\\\\r?$/m', $code ) ) {
+			return $code;
+		}
+
+		$lines = [];
+		foreach ( preg_split( '/\r\n|\r|\n/', $code ) as $line ) {
+			$line = trim( $line );
+			if ( '' === $line || str_starts_with( $line, '//' ) ) {
+				continue;
+			}
+			$lines[] = $line;
+		}
+		return implode( "\n", $lines );
 	}
 }
