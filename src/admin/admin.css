@@ -598,50 +598,102 @@
 /* -------------------------------------------------------------- field groups */
 
 /* Titled blocks inside a section (e.g. General → Header, Contact details, Footer…). */
+
+/* Jump nav: sticks under the wp-admin bar while the section scrolls (the card has no
+   overflow clipping, so sticky works). Spans the card's full width on a white band. */
 .jk-group-nav {
+  position: sticky;
+  top: var(--wp-admin--admin-bar--height, 32px);
+  z-index: 20;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 20px 0 4px;
+  margin: 0 -32px;
+  padding: 12px 32px;
+  border-bottom: 1px solid #e5e5e5;
+  background: rgb(255 255 255 / 0.96);
+  backdrop-filter: blur(8px);
+}
+/* wp-admin's bar scrolls away below 600px, so stick to the very top there. */
+@media (max-width: 600px) {
+  .jk-group-nav {
+    top: 0;
+  }
 }
 .jk-group-nav a {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border: 1px solid #e5e5e5;
   border-radius: 999px;
+  background: #fff;
   color: #404040;
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+.jk-group-nav a .dashicons {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
 }
 .jk-group-nav a:hover {
   border-color: #0a0a0a;
   color: #0a0a0a;
 }
+.jk-group-nav a[aria-current="true"] {
+  border-color: #0a0a0a;
+  background: #0a0a0a;
+  color: #fff;
+}
+
 .jk-field-group {
-  padding-top: 28px;
-  scroll-margin-top: 48px;
+  padding-top: 32px;
 }
 .jk-field-group + .jk-field-group {
-  margin-top: 12px;
+  margin-top: 16px;
   border-top: 1px solid #e5e5e5;
 }
 .jk-field-group-head {
-  padding-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+.jk-field-group-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #0a0a0a;
+  color: #fff;
+}
+.jk-field-group-icon .dashicons {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
 }
 .jk-admin .jk-field-group-head h2 {
-  margin: 0;
-  color: #525252;
-  font-family: var(--tw-font-sans);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  line-height: 1.4;
-  text-transform: uppercase;
+  margin: 2px 0 0;
+  padding: 0;
+  color: #0a0a0a;
+  font-family: var(--tw-font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.jk-admin .jk-field-group-head h2:focus {
+  outline: none;
 }
 .jk-field-group-head p {
   margin: 4px 0 0;
   color: #737373;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }

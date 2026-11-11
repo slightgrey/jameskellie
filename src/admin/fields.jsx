@@ -58,27 +58,80 @@ export function FieldTable({ fields, values, onChange, base, compact = false, gr
     return <div className={`${cls} tw:divide-y tw:divide-neutral-200`}>{rows(shown)}</div>;
   }
 
+  return <GroupedFields cls={cls} shown={shown} groups={groups} base={base} rows={rows} />;
+}
+
+/** wp-admin bar height (32px, 46px on small screens), from core's own CSS variable. */
+const adminBarHeight = () => {
+  const v = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--wp-admin--admin-bar--height'), 10);
+  return Number.isFinite(v) ? v : document.getElementById('wpadminbar') ? 32 : 0;
+};
+
+/**
+ * Titled field groups with a sticky jump nav. The nav sticks under the wp-admin bar while the
+ * section scrolls, and highlights the group currently in view.
+ */
+function GroupedFields({ cls, shown, groups, base, rows }) {
+  const navRef = useRef(null);
   const ungrouped = shown.filter((f) => !f.group || !groups[f.group]);
   const blocks = Object.entries(groups)
     .map(([key, g]) => ({ key, ...g, fields: shown.filter((f) => f.group === key) }))
     .filter((b) => b.fields.length);
   const groupId = (key) => htmlId(`${base}-group-${key}`);
+  const [active, setActive] = useState(blocks[0]?.key ?? '');
+  const withNav = blocks.length > 2;
+
+  // Space taken at the top of the window: the admin bar plus the sticky nav.
+  const topOffset = () => adminBarHeight() + (navRef.current?.offsetHeight ?? 0) + 12;
+
+  // Scrollspy: the active group is the last one whose heading has passed under the nav.
+  const keys = blocks.map((b) => b.key).join('|');
+  useEffect(() => {
+    if (!withNav) return undefined;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = topOffset() + 8;
+      let current = blocks[0]?.key ?? '';
+      for (const b of blocks) {
+        const el = document.getElementById(groupId(b.key));
+        if (el && el.getBoundingClientRect().top <= line) current = b.key;
+      }
+      // At the very bottom the last group can't reach the line, so treat it as active.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) current = blocks[blocks.length - 1].key;
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keys, withNav]);
+
+  const jump = (e, key) => {
+    e.preventDefault();
+    const el = document.getElementById(groupId(key));
+    if (!el) return;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - topOffset(), behavior: 'smooth' });
+    setActive(key);
+    // Keyboard users land on the group heading.
+    el.querySelector('h2')?.focus({ preventScroll: true });
+  };
 
   return (
     <div className={cls}>
-      {blocks.length > 2 && (
-        <nav className="jk-group-nav" aria-label="Jump to a group">
+      {withNav && (
+        <nav ref={navRef} className="jk-group-nav" aria-label="Jump to a group">
           {blocks.map((b) => (
-            <a
-              key={b.key}
-              href={`#${groupId(b.key)}`}
-              onClick={(e) => {
-                e.preventDefault();
-                const el = document.getElementById(groupId(b.key));
-                // Below the wp-admin bar (32px) and a little breathing room.
-                if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 48, behavior: 'smooth' });
-              }}
-            >
+            <a key={b.key} href={`#${groupId(b.key)}`} aria-current={active === b.key ? 'true' : undefined} onClick={(e) => jump(e, b.key)}>
+              {b.icon && <span className={`dashicons ${b.icon}`} aria-hidden="true"></span>}
               {b.title}
             </a>
           ))}
@@ -88,8 +141,17 @@ export function FieldTable({ fields, values, onChange, base, compact = false, gr
       {blocks.map((b) => (
         <section key={b.key} id={groupId(b.key)} className="jk-field-group" aria-labelledby={`${groupId(b.key)}-title`}>
           <header className="jk-field-group-head">
-            <h2 id={`${groupId(b.key)}-title`}>{b.title}</h2>
-            {b.help && <p>{b.help}</p>}
+            {b.icon && (
+              <span className="jk-field-group-icon" aria-hidden="true">
+                <span className={`dashicons ${b.icon}`}></span>
+              </span>
+            )}
+            <div>
+              <h2 id={`${groupId(b.key)}-title`} tabIndex={-1}>
+                {b.title}
+              </h2>
+              {b.help && <p>{b.help}</p>}
+            </div>
           </header>
           <div className="tw:divide-y tw:divide-neutral-200">{rows(b.fields)}</div>
         </section>

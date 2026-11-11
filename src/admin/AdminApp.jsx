@@ -377,7 +377,7 @@ export default function AdminApp() {
           )}
 
           <div className="tw:min-w-0">
-          <section className="tw:overflow-hidden tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:shadow-sm">
+          <section className="jk-card tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:shadow-sm">
             <header className="tw:flex tw:flex-wrap tw:items-start tw:justify-between tw:gap-4 tw:border-b tw:border-neutral-200 tw:px-8 tw:py-7">
               <div className="tw:flex tw:items-start tw:gap-4">
                 <span className="tw:flex tw:size-11 tw:flex-none tw:items-center tw:justify-center tw:rounded-xl tw:bg-neutral-100 tw:text-ink" aria-hidden="true">

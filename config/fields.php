@@ -29,26 +29,35 @@ return [
 		// Display groups for the settings screen (React admin). Fields name theirs with 'group'.
 		'groups' => [
 			'header'  => [
+				'icon'  => 'dashicons-menu-alt3',
 				'title' => 'Header',
 				'help'  => 'The logo, the black button and how the header behaves.',
 			],
 			'contact' => [
+				'icon'  => 'dashicons-phone',
 				'title' => 'Contact details',
 				'help'  => 'Used by the Hero, Contact and Book Appointment sections and the enquiry emails.',
 			],
 			'social'  => [
+				'icon'  => 'dashicons-share',
 				'title' => 'Social links',
 				'help'  => 'Shown in the footer.',
 			],
 			'footer'  => [
+				'icon'  => 'dashicons-table-row-after',
 				'title' => 'Footer',
 				'help'  => 'The bottom of every page.',
 			],
 			'seo'     => [
+				'icon'  => 'dashicons-search',
 				'title' => 'SEO & sharing',
 				'help'  => 'How the Home page appears in Google and when shared.',
 			],
-			'misc'    => [ 'title' => 'Misc' ],
+			'misc'    => [
+				'icon'  => 'dashicons-admin-generic',
+				'title' => 'Misc',
+				'help'  => 'Small extras.',
+			],
 		],
 		'fields' => [
 			[
