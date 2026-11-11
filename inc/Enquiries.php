@@ -44,8 +44,22 @@ final class Enquiries {
 				'show_in_rest'        => false,
 				'exclude_from_search' => true,
 				'supports'            => [ 'title' ],
+				// Enquiries hold visitors' personal details: administrators only (manage_options,
+				// as for Theme Settings), not Editors. Nobody creates them by hand.
 				'capability_type'     => 'post',
-				'capabilities'        => [ 'create_posts' => 'do_not_allow' ],
+				'capabilities'        => [
+					'create_posts'           => 'do_not_allow',
+					'edit_posts'             => 'manage_options',
+					'edit_others_posts'      => 'manage_options',
+					'edit_private_posts'     => 'manage_options',
+					'edit_published_posts'   => 'manage_options',
+					'publish_posts'          => 'manage_options',
+					'read_private_posts'     => 'manage_options',
+					'delete_posts'           => 'manage_options',
+					'delete_others_posts'    => 'manage_options',
+					'delete_private_posts'   => 'manage_options',
+					'delete_published_posts' => 'manage_options',
+				],
 				'map_meta_cap'        => true,
 			]
 		);

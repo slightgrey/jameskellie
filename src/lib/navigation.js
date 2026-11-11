@@ -87,7 +87,8 @@ export function fetchRoute(path) {
 
 /** Replace the synced SEO tags with the ones from a route's wp_head output. */
 export function syncHead({ title, head, bodyClass }) {
-  if (title) document.title = title;
+  // wp_get_document_title() is HTML-encoded (e.g. "&#8211;"); decode it as the browser would.
+  if (title) document.title = new DOMParser().parseFromString(`<!doctype html><title>${title}</title>`, 'text/html').title;
   if (typeof bodyClass === 'string') document.body.className = bodyClass;
   if (typeof head !== 'string') return;
   const doc = new DOMParser().parseFromString(`<!doctype html><html><head>${head}</head><body></body></html>`, 'text/html');

@@ -19,13 +19,13 @@ if (root && boot.site && boot.preview) {
   // Theme Settings live preview (?jk_preview=hero, administrators only): one section, no router.
   // A router is still needed: some sections (Contact) read the URL with useLocation().
   createRoot(root).render(
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter>
       <PreviewApp site={boot.site} preview={boot.preview} />
     </BrowserRouter>,
   );
 } else if (root && boot.site && boot.route) {
   createRoot(root).render(
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter>
       <App site={boot.site} initialRoute={boot.route} />
     </BrowserRouter>,
   );

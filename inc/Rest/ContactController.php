@@ -21,10 +21,11 @@ defined( 'ABSPATH' ) || exit;
  */
 final class ContactController {
 
-	private const RATE_LIMIT  = 5;
-	private const RATE_WINDOW = 600;
-	private const MIN_SECONDS = 3;
-	private const NOJS_NONCE  = 'jk_contact';
+	private const RATE_LIMIT    = 5;  // Sent messages per IP per window.
+	private const ATTEMPT_LIMIT = 15; // Attempts (incl. failed validation or captcha) per IP per window.
+	private const RATE_WINDOW   = 600;
+	private const MIN_SECONDS   = 3;
+	private const NOJS_NONCE    = 'jk_contact';
 
 	/**
 	 * Register hooks.
@@ -114,12 +115,18 @@ final class ContactController {
 			return new WP_Error( 'jk_spam', __( 'Your message could not be sent.', 'jameskellie' ), [ 'status' => 400 ] );
 		}
 
-		// Rate limit: 5 per IP per 10 minutes.
-		$ip_key = 'jk_rl_' . md5( self::client_ip() . wp_salt( 'nonce' ) );
-		$count  = (int) get_transient( $ip_key );
-		if ( $count >= self::RATE_LIMIT ) {
+		// Rate limits per IP per 10 minutes: 5 sent messages, and ATTEMPT_LIMIT attempts of any kind.
+		// Counting attempts too stops a bot from failing the captcha endlessly, since each failed
+		// try would otherwise cost an outbound call to Cloudflare/Google.
+		$ip_hash     = md5( self::client_ip() . wp_salt( 'nonce' ) );
+		$ip_key      = 'jk_rl_' . $ip_hash;
+		$attempt_key = 'jk_ra_' . $ip_hash;
+		$count       = (int) get_transient( $ip_key );
+		$attempts    = (int) get_transient( $attempt_key );
+		if ( $count >= self::RATE_LIMIT || $attempts >= self::ATTEMPT_LIMIT ) {
 			return new WP_Error( 'jk_rate_limited', __( 'Too many messages. Please try again in a few minutes, or give me a call.', 'jameskellie' ), [ 'status' => 429 ] );
 		}
+		set_transient( $attempt_key, $attempts + 1, self::RATE_WINDOW );
 
 		$topics = array_values( (array) Settings::get( 'contact.topics', [] ) );
 		$topic  = sanitize_text_field( $str( 'topic' ) );
@@ -131,9 +138,10 @@ final class ContactController {
 			'topic'   => $topic,
 			'name'    => sanitize_text_field( $str( 'name' ) ),
 			'email'   => sanitize_email( $str( 'email' ) ),
-			'phone'   => trim( (string) preg_replace( '/[^0-9 +]/', '', $str( 'phone' ) ) ),
+			'phone'   => mb_substr( trim( (string) preg_replace( '/[^0-9 +]/', '', $str( 'phone' ) ) ), 0, 32 ),
 			'message' => sanitize_textarea_field( $str( 'message' ) ),
-			'page'    => esc_url_raw( $str( 'page' ) ),
+			// Only a page of this site, and not absurdly long; anything else is dropped.
+			'page'    => self::own_url( $str( 'page' ) ),
 		];
 
 		$errors = [];
@@ -203,6 +211,21 @@ final class ContactController {
 		];
 
 		return (bool) wp_mail( $to, $subject, $body, $headers );
+	}
+
+	/**
+	 * The "sent from" URL, kept only when it is a page of this site (it comes from the visitor's
+	 * browser, so it could otherwise point anywhere, e.g. a phishing page shown in the admin).
+	 *
+	 * @param string $url Raw URL.
+	 */
+	private static function own_url( string $url ): string {
+		$url = esc_url_raw( trim( $url ), [ 'http', 'https' ] );
+		if ( '' === $url || strlen( $url ) > 500 ) {
+			return '';
+		}
+		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
+		return strtolower( $host ) === strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) ? $url : '';
 	}
 
 	/**

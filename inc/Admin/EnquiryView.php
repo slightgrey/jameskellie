@@ -169,9 +169,17 @@ final class EnquiryView {
 							}
 							self::detail( $label, __( 'Phone', 'jameskellie' ), '' !== $phone ? sprintf( '<a class="tw:text-ink" href="%s">%s</a>', esc_url( $tel, [ 'tel' ] ), esc_html( $phone ) ) : '<span class="tw:text-neutral-400">' . esc_html__( 'Not given', 'jameskellie' ) . '</span>' );
 							if ( '' !== $page ) {
+								// The URL came from the visitor's browser: only link it when it is this site.
+								$own  = strtolower( (string) wp_parse_url( $page, PHP_URL_HOST ) ) === strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
 								$path = (string) wp_parse_url( $page, PHP_URL_PATH );
 								$text = '' === $path || '/' === $path ? __( 'Home page', 'jameskellie' ) : $path;
-								self::detail( $label, __( 'Sent from', 'jameskellie' ), sprintf( '<a class="tw:break-all tw:text-ink" href="%s" target="_blank" rel="noopener">%s</a>', esc_url( $page ), esc_html( $text ) ) );
+								self::detail(
+									$label,
+									__( 'Sent from', 'jameskellie' ),
+									$own
+										? sprintf( '<a class="tw:break-all tw:text-ink" href="%s" target="_blank" rel="noopener noreferrer">%s</a>', esc_url( $page ), esc_html( $text ) )
+										: sprintf( '<span class="tw:break-all tw:text-neutral-500">%s</span>', esc_html( $page ) )
+								);
 							}
 							?>
 						</dl>

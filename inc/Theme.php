@@ -30,6 +30,7 @@ final class Theme {
 		( new CustomCode() )->hooks();
 		( new Seo() )->hooks();
 		( new Spa() )->hooks();
+		( new SecurityHeaders() )->hooks();
 		( new Enquiries() )->hooks();
 		( new Rest\ContactController() )->hooks();
 		( new Rest\SettingsController() )->hooks();

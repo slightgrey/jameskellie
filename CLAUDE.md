@@ -17,6 +17,13 @@ React version of the `jameskellie-theme` PHP theme. It uses **the same data** (`
 - **Live preview** (every Home section's settings screen): `src/admin/Preview.jsx` iframes `/?jk_preview={key}` (administrators only, noindex, no admin bar), where `src/preview/PreviewApp.jsx` renders that one section with the real component. Unsaved values go to `POST jk/v1/admin/preview/{key}` → `Boot::preview_data()` (sanitised, never saved) and are posted into the frame. Links and form submits are blocked inside the preview. Sections are listed in `Boot::PREVIEW_SECTIONS`.
 - **Still PHP:** the Book Appointment meta box (`AppointmentMetaBox` + `FieldRenderer` + `src/admin/metabox.js`), Enquiries CPT, contact endpoint `jk/v1/contact`, Performance, Custom Code, SEO. WordPress cannot load a theme without PHP.
 
+## Security decisions (keep these)
+
+- Contact form (`jk/v1/contact`, public): REST nonce, honeypot, minimum fill time, captcha, and two per-IP limits per 10 min: 5 sent, 15 attempts (attempts stop endless captcha retries). Fields are length-capped; the "sent from" URL is kept only if it is this site (`own_url()`).
+- Enquiries (`jk_enquiry`) hold personal data: every capability maps to `manage_options` (administrators only, not Editors).
+- Front-end responses send `X-Frame-Options: SAMEORIGIN`, `nosniff` and `Referrer-Policy` (`inc/SecurityHeaders.php`, filter `jk_security_headers`).
+- Boot data and SPA JSON never contain captcha secrets or Custom Code. Settings exports DO contain the captcha secret keys: treat export files as private.
+
 ## Rules
 
 - PHP 8.1+, namespace `JK\`, WPCS: escape output, sanitise input, and add capability checks on every write.
