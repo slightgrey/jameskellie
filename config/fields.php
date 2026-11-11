@@ -26,22 +26,77 @@ $jk_anchor = [
 return [
 	'general'     => [
 		'title'  => 'General',
+		// Display groups for the settings screen (React admin). Fields name theirs with 'group'.
+		'groups' => [
+			'header'  => [
+				'title' => 'Header',
+				'help'  => 'The logo, the black button and how the header behaves.',
+			],
+			'contact' => [
+				'title' => 'Contact details',
+				'help'  => 'Used by the Hero, Contact and Book Appointment sections and the enquiry emails.',
+			],
+			'social'  => [
+				'title' => 'Social links',
+				'help'  => 'Shown in the footer.',
+			],
+			'footer'  => [
+				'title' => 'Footer',
+				'help'  => 'The bottom of every page.',
+			],
+			'seo'     => [
+				'title' => 'SEO & sharing',
+				'help'  => 'How the Home page appears in Google and when shared.',
+			],
+			'misc'    => [ 'title' => 'Misc' ],
+		],
 		'fields' => [
+			[
+				'key'   => 'logo',
+				'type'  => 'image',
+				'label' => 'Logo image (optional)',
+				'help'  => 'Replaces the coded JK lockup when set.',
+				'group' => 'header',
+			],
+			[
+				'key'   => 'cta',
+				'type'  => 'link',
+				'label' => 'Book-a-call button',
+				'help'  => 'Clear the label or link to hide the button.',
+				'group' => 'header',
+			],
+			[
+				'key'   => 'sticky_header',
+				'type'  => 'toggle',
+				'label' => 'Sticky header',
+				'help'  => 'Hides on scroll down, comes back on scroll up.',
+				'group' => 'header',
+			],
 			[
 				'key'   => 'phone_display',
 				'type'  => 'text',
 				'label' => 'Phone (display)',
+				'group' => 'contact',
 			],
 			[
 				'key'   => 'phone_tel',
 				'type'  => 'tel',
 				'label' => 'Phone (tel link, digits only)',
+				'group' => 'contact',
 			],
 			[
 				'key'   => 'emails',
 				'type'  => 'email',
 				'label' => 'Enquiry email recipient(s)',
 				'help'  => 'Comma-separated. Empty uses the site admin email.',
+				'group' => 'contact',
+			],
+			[
+				'key'   => 'calendly_url',
+				'type'  => 'url',
+				'label' => 'Calendly URL',
+				'help'  => 'The booking calendar on the Book Appointment page.',
+				'group' => 'contact',
 			],
 			[
 				'key'       => 'social',
@@ -49,6 +104,7 @@ return [
 				'label'     => 'Social links',
 				'max'       => 8,
 				'row_title' => 'network',
+				'group'     => 'social',
 				'fields'    => [
 					[
 						'key'     => 'network',
@@ -72,52 +128,38 @@ return [
 				],
 			],
 			[
-				'key'   => 'calendly_url',
-				'type'  => 'url',
-				'label' => 'Calendly URL',
-			],
-			[
-				'key'   => 'cta',
-				'type'  => 'link',
-				'label' => 'Book-a-call button (header)',
-			],
-			[
-				'key'   => 'logo',
-				'type'  => 'image',
-				'label' => 'Logo image (optional)',
-				'help'  => 'Replaces the coded JK lockup when set.',
-			],
-			[
-				'key'   => 'sticky_header',
-				'type'  => 'toggle',
-				'label' => 'Sticky header',
+				'key'   => 'copyright',
+				'type'  => 'text',
+				'label' => 'Footer copyright',
+				'help'  => '{year} is replaced with the current year.',
+				'group' => 'footer',
 			],
 			[
 				'key'   => 'back_to_top',
 				'type'  => 'toggle',
 				'label' => 'Show back-to-top button',
-			],
-			[
-				'key'   => 'click_hints',
-				'type'  => 'toggle',
-				'label' => 'Show click hints',
-			],
-			[
-				'key'   => 'copyright',
-				'type'  => 'text',
-				'label' => 'Footer copyright',
-				'help'  => '{year} is replaced with the current year.',
+				'group' => 'footer',
 			],
 			[
 				'key'   => 'seo_description',
 				'type'  => 'textarea',
 				'label' => 'Home SEO description',
 				'help'  => 'Only used when no SEO plugin (Yoast, Rank Math) is active.',
+				'group' => 'seo',
 			],
 			[
 				'key'   => 'share_image',
 				'type'  => 'image',
 				'label' => 'Home share image',
+				'help'  => 'Shown when the site is shared on social media. 1200 × 630 works best.',
+				'group' => 'seo',
+			],
+			[
+				'key'   => 'click_hints',
+				'type'  => 'toggle',
+				'label' => 'Show click hints',
+				'help'  => 'The animated pointer that shows visitors what to click (Services, Experience, Skills, CTA).',
+				'group' => 'misc',
 			],
 		],
 	],

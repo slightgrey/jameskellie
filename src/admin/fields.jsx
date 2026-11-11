@@ -17,35 +17,83 @@ const htmlId = (raw) => raw.replace(/[^A-Za-z0-9_-]+/g, '-').toLowerCase();
 /** A field with `show_if: { key: value }` only shows while those sibling values match. */
 const visible = (field, values) => !field.show_if || Object.entries(field.show_if).every(([key, want]) => values[key] === want);
 
-/** Label / control rows for a section. */
-export function FieldTable({ fields, values, onChange, base, compact = false }) {
-  // compact: the fields column beside the live preview; admin.css (.jk-fields-compact) stacks
-  // labels above inputs at ≥1280px.
-  const columns = 'tw:md:grid-cols-[minmax(0,240px)_minmax(0,1fr)]';
+const COLUMNS = 'tw:md:grid-cols-[minmax(0,240px)_minmax(0,1fr)]';
+
+/** One label / control row. */
+function FieldRow({ field, base, values, onChange }) {
+  const id = htmlId(`${base}-${field.key}`);
+  const label = field.label ?? field.key;
+  const wide = WIDE_TYPES.includes(field.type);
   return (
-    <div className={`jk-fields tw:divide-y tw:divide-neutral-200${compact ? ' jk-fields-compact' : ''}`}>
-      {fields.filter((field) => visible(field, values)).map((field) => {
-        const id = htmlId(`${base}-${field.key}`);
-        const label = field.label ?? field.key;
-        const wide = WIDE_TYPES.includes(field.type);
-        return (
-          <div key={field.key} className={`tw:grid tw:gap-x-10 tw:gap-y-3 tw:py-6 ${wide ? '' : columns}`}>
-            <div className="tw:min-w-0">
-              {GROUP_TYPES.includes(field.type) ? (
-                <span className="tw:block tw:text-[13px] tw:font-semibold tw:text-neutral-900">{label}</span>
-              ) : (
-                <label className="tw:block tw:text-[13px] tw:font-semibold tw:text-neutral-900" htmlFor={id}>
-                  {label}
-                </label>
-              )}
-              {field.help && <p className="tw:mt-1 tw:mb-0 tw:text-xs tw:leading-relaxed tw:text-neutral-500">{field.help}</p>}
-            </div>
-            <div className="tw:min-w-0">
-              <Field field={field} id={id} value={values[field.key]} onChange={(v) => onChange(field.key, v)} />
-            </div>
-          </div>
-        );
-      })}
+    <div className={`jk-field-row tw:grid tw:gap-x-10 tw:gap-y-3 tw:py-6 ${wide ? '' : COLUMNS}`}>
+      <div className="tw:min-w-0">
+        {GROUP_TYPES.includes(field.type) ? (
+          <span className="tw:block tw:text-[13px] tw:font-semibold tw:text-neutral-900">{label}</span>
+        ) : (
+          <label className="tw:block tw:text-[13px] tw:font-semibold tw:text-neutral-900" htmlFor={id}>
+            {label}
+          </label>
+        )}
+        {field.help && <p className="tw:mt-1 tw:mb-0 tw:text-xs tw:leading-relaxed tw:text-neutral-500">{field.help}</p>}
+      </div>
+      <div className="tw:min-w-0">
+        <Field field={field} id={id} value={values[field.key]} onChange={(v) => onChange(field.key, v)} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Label / control rows for a section. With `groups` (config/fields.php → 'groups'), fields are
+ * shown under titled blocks in that order, with jump links at the top; ungrouped fields come first.
+ * compact: the fields column beside the live preview; admin.css (.jk-fields-compact) stacks
+ * labels above inputs at ≥1280px.
+ */
+export function FieldTable({ fields, values, onChange, base, compact = false, groups = null }) {
+  const shown = fields.filter((field) => visible(field, values));
+  const rows = (list) => list.map((field) => <FieldRow key={field.key} field={field} base={base} values={values} onChange={onChange} />);
+  const cls = `jk-fields${compact ? ' jk-fields-compact' : ''}`;
+
+  if (!groups || !Object.keys(groups).length) {
+    return <div className={`${cls} tw:divide-y tw:divide-neutral-200`}>{rows(shown)}</div>;
+  }
+
+  const ungrouped = shown.filter((f) => !f.group || !groups[f.group]);
+  const blocks = Object.entries(groups)
+    .map(([key, g]) => ({ key, ...g, fields: shown.filter((f) => f.group === key) }))
+    .filter((b) => b.fields.length);
+  const groupId = (key) => htmlId(`${base}-group-${key}`);
+
+  return (
+    <div className={cls}>
+      {blocks.length > 2 && (
+        <nav className="jk-group-nav" aria-label="Jump to a group">
+          {blocks.map((b) => (
+            <a
+              key={b.key}
+              href={`#${groupId(b.key)}`}
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById(groupId(b.key));
+                // Below the wp-admin bar (32px) and a little breathing room.
+                if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 48, behavior: 'smooth' });
+              }}
+            >
+              {b.title}
+            </a>
+          ))}
+        </nav>
+      )}
+      {ungrouped.length > 0 && <div className="tw:divide-y tw:divide-neutral-200">{rows(ungrouped)}</div>}
+      {blocks.map((b) => (
+        <section key={b.key} id={groupId(b.key)} className="jk-field-group" aria-labelledby={`${groupId(b.key)}-title`}>
+          <header className="jk-field-group-head">
+            <h2 id={`${groupId(b.key)}-title`}>{b.title}</h2>
+            {b.help && <p>{b.help}</p>}
+          </header>
+          <div className="tw:divide-y tw:divide-neutral-200">{rows(b.fields)}</div>
+        </section>
+      ))}
     </div>
   );
 }

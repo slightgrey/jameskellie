@@ -405,7 +405,7 @@ export default function AdminApp() {
             <form id="jk-settings-form" onSubmit={save} aria-busy={busy ? 'true' : 'false'} className={status === 'loading' ? 'tw:opacity-50' : undefined}>
               <div className="tw:px-8">
                 {values ? (
-                  <FieldTable key={`${section}-${version}`} fields={fields} values={values} onChange={onChange} base={`jk_${section}`} compact={split} />
+                  <FieldTable key={`${section}-${version}`} fields={fields} values={values} onChange={onChange} base={`jk_${section}`} compact={split} groups={cfg.fieldGroups?.[section] ?? null} />
                 ) : (
                   <p className="tw:py-8 tw:text-sm tw:text-neutral-500">{status === 'error' ? 'The settings could not be loaded.' : 'Loading…'}</p>
                 )}

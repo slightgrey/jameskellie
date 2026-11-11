@@ -100,7 +100,7 @@ final class Menu {
 	public static function nav(): array {
 		return [
 			__( 'Site', 'jameskellie' )      => [
-				'general' => [ 'dashicons-admin-settings', __( 'Contact details, the header button, logo, spam protection and sharing.', 'jameskellie' ) ],
+				'general' => [ 'dashicons-admin-settings', __( 'Header, contact details, social links, footer and sharing.', 'jameskellie' ) ],
 				'layout'  => [ 'dashicons-layout', __( 'Drag the Home page sections into the order you want.', 'jameskellie' ) ],
 			],
 			__( 'Home page', 'jameskellie' ) => [
@@ -178,9 +178,15 @@ final class Menu {
 			$groups[] = $group;
 		}
 
-		$fields = [];
+		$fields       = [];
+		$field_groups = [];
+		$all          = Schema::all();
 		foreach ( Schema::option_sections() as $section ) {
 			$fields[ $section ] = Schema::fields( $section );
+			// Optional display groups (e.g. General → Header, Contact details, Footer…).
+			if ( ! empty( $all[ $section ]['groups'] ) ) {
+				$field_groups[ $section ] = $all[ $section ]['groups'];
+			}
 		}
 
 		$enquiries = wp_count_posts( Enquiries::POST_TYPE );
@@ -188,26 +194,27 @@ final class Menu {
 		$sizes     = Assets::bundle_sizes();
 
 		return [
-			'rest'       => esc_url_raw( rest_url( 'jk/v1/admin/' ) ),
-			'nonce'      => wp_create_nonce( 'wp_rest' ),
-			'section'    => self::current_section(),
-			'groups'     => $groups,
-			'fields'     => $fields,
-			'enabled'    => self::enabled(),
-			'adminUrl'   => admin_url( 'admin.php' ),
-			'homeUrl'    => home_url( '/' ),
+			'rest'        => esc_url_raw( rest_url( 'jk/v1/admin/' ) ),
+			'nonce'       => wp_create_nonce( 'wp_rest' ),
+			'section'     => self::current_section(),
+			'groups'      => $groups,
+			'fields'      => $fields,
+			'fieldGroups' => (object) $field_groups,
+			'enabled'     => self::enabled(),
+			'adminUrl'    => admin_url( 'admin.php' ),
+			'homeUrl'     => home_url( '/' ),
 			// Live preview: sections that have one, and the iframe URL ({key} is replaced).
-			'preview'    => [
+			'preview'     => [
 				'sections' => \JK\Boot::PREVIEW_SECTIONS,
 				'url'      => add_query_arg( 'jk_preview', '{key}', home_url( '/' ) ),
 			],
-			'enquiries'  => [
+			'enquiries'   => [
 				'url'   => admin_url( 'edit.php?post_type=' . Enquiries::POST_TYPE ),
 				'count' => (int) ( $enquiries->private ?? 0 ),
 			],
-			'unfiltered' => current_user_can( 'unfiltered_html' ),
-			'revisions'  => defined( 'WP_POST_REVISIONS' ) ? var_export( WP_POST_REVISIONS, true ) : 'true', // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- display only.
-			'status'     => [
+			'unfiltered'  => current_user_can( 'unfiltered_html' ),
+			'revisions'   => defined( 'WP_POST_REVISIONS' ) ? var_export( WP_POST_REVISIONS, true ) : 'true', // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- display only.
+			'status'      => [
 				[ __( 'PHP', 'jameskellie' ), PHP_VERSION ],
 				[ __( 'Object cache', 'jameskellie' ), wp_using_ext_object_cache() ? __( 'Persistent', 'jameskellie' ) : __( 'None', 'jameskellie' ) ],
 				[

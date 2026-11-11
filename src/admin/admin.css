@@ -540,7 +540,7 @@
    !important declarations an earlier layer wins, so this sits in `base` (as [hidden] does). */
 @layer base {
   @media (min-width: 1280px) {
-    .jk-fields-compact > div {
+    .jk-fields-compact .jk-field-row {
       grid-template-columns: minmax(0, 1fr) !important;
       row-gap: 8px !important;
       padding-top: 18px !important;
@@ -593,4 +593,55 @@
     justify-content: space-between;
     border-radius: 16px;
   }
+}
+
+/* -------------------------------------------------------------- field groups */
+
+/* Titled blocks inside a section (e.g. General → Header, Contact details, Footer…). */
+.jk-group-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 20px 0 4px;
+}
+.jk-group-nav a {
+  padding: 5px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  color: #404040;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.jk-group-nav a:hover {
+  border-color: #0a0a0a;
+  color: #0a0a0a;
+}
+.jk-field-group {
+  padding-top: 28px;
+  scroll-margin-top: 48px;
+}
+.jk-field-group + .jk-field-group {
+  margin-top: 12px;
+  border-top: 1px solid #e5e5e5;
+}
+.jk-field-group-head {
+  padding-bottom: 4px;
+}
+.jk-admin .jk-field-group-head h2 {
+  margin: 0;
+  color: #525252;
+  font-family: var(--tw-font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.jk-field-group-head p {
+  margin: 4px 0 0;
+  color: #737373;
+  font-size: 12px;
+  line-height: 1.5;
 }
