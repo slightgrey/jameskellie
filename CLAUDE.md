@@ -33,5 +33,5 @@ npm run dev     # Vite :5173, writes /hot so PHP enqueues from it
 npm run build   # dist/ with manifest
 composer lint   # PHPCS (WPCS)
 npm run version:patch|minor|major   # bumps style.css, JK_VERSION and package.json together
-npm run bundle  # build + release/jameskellie-vX.Y.Z.zip (refuses with hot present or versions out of step)
+npm run bundle  # build + releases/jameskellie-vX.Y.Z.zip (refuses with hot present or versions out of step)
 ```

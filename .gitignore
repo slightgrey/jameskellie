@@ -7,6 +7,6 @@ Thumbs.db
 *.log
 .phpcs-cache
 
-# Release zips (npm run bundle writes them to release/)
-/release/
+# Release zips (npm run bundle writes them to releases/)
+/releases/
 *.zip

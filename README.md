@@ -25,9 +25,9 @@ The version lives in three places, and the scripts keep them in step: the `style
 | `npm run version:patch` | 2.0.0 → 2.0.1: fixes |
 | `npm run version:minor` | 2.0.0 → 2.1.0: new features |
 | `npm run version:major` | 2.0.0 → 3.0.0: breaking changes |
-| `npm run bundle` | Builds the assets and writes `release/jameskellie-vX.Y.Z.zip` |
+| `npm run bundle` | Builds the assets and writes `releases/jameskellie-vX.Y.Z.zip` |
 
-The bundle refuses to run while `npm run dev` is running (the `hot` file), or if the three versions disagree. The zip contains a `jameskellie/` folder with only what the live site needs: `inc/`, `config/`, `templates/`, `assets/`, `dist/`, `style.css` and the root PHP files. `src/`, `node_modules/`, `vendor/`, docs and scripts stay out. The `release/` folder is gitignored.
+The bundle refuses to run while `npm run dev` is running (the `hot` file), or if the three versions disagree. The zip contains a `jameskellie/` folder with only what the live site needs: `inc/`, `config/`, `templates/`, `assets/`, `dist/`, `style.css` and the root PHP files. `src/`, `node_modules/`, `vendor/`, docs and scripts stay out. The `releases/` folder is gitignored.
 
 A release:
 
@@ -39,7 +39,7 @@ git commit -am "chore: release vX.Y.Z"
 
 ## Deploying
 
-Upload `release/jameskellie-vX.Y.Z.zip` under **Appearance → Themes → Add New → Upload Theme**, or upload the `jameskellie/` folder from the zip to `wp-content/themes/` over SFTP. The folder must be named `jameskellie`, because the Vite `base` in `vite.config.js` points there.
+Upload `releases/jameskellie-vX.Y.Z.zip` under **Appearance → Themes → Add New → Upload Theme**, or upload the `jameskellie/` folder from the zip to `wp-content/themes/` over SFTP. The folder must be named `jameskellie`, because the Vite `base` in `vite.config.js` points there.
 
 ## SEO note
 
