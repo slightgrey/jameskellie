@@ -148,6 +148,7 @@
 /* ------------------------------------------------------------------ fields */
 
 .jk-fields input[type="text"],
+.jk-fields input[type="password"],
 .jk-fields input[type="number"],
 .jk-fields input[type="url"],
 .jk-fields input[type="email"],
@@ -179,12 +180,14 @@
   resize: vertical;
 }
 .jk-fields input[type="text"]:hover,
+.jk-fields input[type="password"]:hover,
 .jk-fields input[type="number"]:hover,
 .jk-fields select:hover,
 .jk-fields textarea:hover {
   border-color: #a3a3a3;
 }
 .jk-fields input[type="text"]:focus,
+.jk-fields input[type="password"]:focus,
 .jk-fields input[type="number"]:focus,
 .jk-fields select:focus,
 .jk-fields textarea:focus {

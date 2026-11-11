@@ -114,6 +114,7 @@ final class Menu {
 			],
 			__( 'Advanced', 'jameskellie' )  => [
 				'performance' => [ 'dashicons-performance', __( 'Speed tweaks for the front end. The defaults suit most sites.', 'jameskellie' ) ],
+				'captcha'     => [ 'dashicons-shield', __( 'Spam protection for the contact form: Cloudflare Turnstile or Google reCAPTCHA.', 'jameskellie' ) ],
 				'code'        => [ 'dashicons-editor-code', __( 'Tracking and verification snippets, such as Google Tag Manager.', 'jameskellie' ) ],
 			],
 		];

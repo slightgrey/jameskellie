@@ -103,17 +103,6 @@ return [
 				'label' => 'Show click hints',
 			],
 			[
-				'key'   => 'turnstile_site',
-				'type'  => 'text',
-				'label' => 'Cloudflare Turnstile site key',
-			],
-			[
-				'key'   => 'turnstile_secret',
-				'type'  => 'text',
-				'label' => 'Cloudflare Turnstile secret key',
-				'help'  => 'Leave both keys empty to run with the honeypot only.',
-			],
-			[
 				'key'   => 'copyright',
 				'type'  => 'text',
 				'label' => 'Footer copyright',
@@ -631,6 +620,59 @@ return [
 				'type'  => 'toggle',
 				'label' => 'Delay Custom Code footer scripts until interaction',
 				'help'  => 'Runs them on first scroll, click or keydown, or after 5 seconds.',
+			],
+		],
+	],
+	'captcha'     => [
+		'title'  => 'Captcha',
+		'fields' => [
+			[
+				'key'     => 'provider',
+				'type'    => 'select',
+				'label'   => 'Provider',
+				'help'    => 'Protects the contact form. The honeypot, timing check and rate limit always run as well.',
+				'choices' => [
+					'none'      => 'Off (honeypot only)',
+					'turnstile' => 'Cloudflare Turnstile',
+					'recaptcha' => 'Google reCAPTCHA',
+				],
+			],
+			[
+				'key'     => 'turnstile_site',
+				'type'    => 'text',
+				'label'   => 'Turnstile site key',
+				'help'    => 'From dash.cloudflare.com → Turnstile.',
+				'show_if' => [ 'provider' => 'turnstile' ],
+			],
+			[
+				'key'     => 'turnstile_secret',
+				'type'    => 'password',
+				'label'   => 'Turnstile secret key',
+				'show_if' => [ 'provider' => 'turnstile' ],
+			],
+			[
+				'key'     => 'recaptcha_version',
+				'type'    => 'select',
+				'label'   => 'reCAPTCHA version',
+				'help'    => 'Must match the key type you created at google.com/recaptcha/admin.',
+				'choices' => [
+					'v3' => 'Invisible (v3)',
+					'v2' => 'Checkbox (v2)',
+				],
+				'show_if' => [ 'provider' => 'recaptcha' ],
+			],
+			[
+				'key'     => 'recaptcha_site',
+				'type'    => 'text',
+				'label'   => 'reCAPTCHA site key',
+				'show_if' => [ 'provider' => 'recaptcha' ],
+			],
+			[
+				'key'     => 'recaptcha_secret',
+				'type'    => 'password',
+				'label'   => 'reCAPTCHA secret key',
+				'help'    => 'v3 also needs a score of at least 0.5.',
+				'show_if' => [ 'provider' => 'recaptcha' ],
 			],
 		],
 	],

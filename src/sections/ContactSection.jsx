@@ -46,7 +46,7 @@ export default function ContactSection({ data, site }) {
             action={site.contact.action}
             nojsNonce={site.contact.nojsNonce}
             ts={site.contact.ts}
-            turnstile={site.contact.turnstile}
+            captcha={site.contact.captcha}
             status={status}
             labels={site.i18n.contact}
           />

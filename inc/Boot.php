@@ -4,7 +4,7 @@
  *
  * The same payload is inlined on a direct load (index.php) and returned as JSON
  * for SPA navigation (Spa.php), so both paths use the real WordPress main query.
- * It never contains secrets (Turnstile secret) or the Custom Code snippets.
+ * It never contains secrets (captcha secret keys) or the Custom Code snippets.
  *
  * @package jameskellie
  */
@@ -132,7 +132,7 @@ final class Boot {
 				'action'    => admin_url( 'admin-post.php' ),
 				'nojsNonce' => wp_create_nonce( ContactController::nojs_nonce_action() ),
 				'ts'        => time(),
-				'turnstile' => '' !== (string) $general['turnstile_secret'] ? (string) $general['turnstile_site'] : '',
+				'captcha'   => Captcha::client_config(),
 			],
 			'i18n'           => self::strings(),
 		];
@@ -207,6 +207,7 @@ final class Boot {
 				'invalidName'  => __( 'Please enter your name (2–100 characters).', 'jameskellie' ),
 				'invalidEmail' => __( 'Please enter a valid email address.', 'jameskellie' ),
 				'invalidMsg'   => __( 'Please enter a message (10–5000 characters).', 'jameskellie' ),
+				'captcha'      => __( 'Please tick the “I’m not a robot” box and try again.', 'jameskellie' ),
 			],
 		];
 	}

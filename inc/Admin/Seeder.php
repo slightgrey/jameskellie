@@ -23,6 +23,35 @@ final class Seeder {
 	public function hooks(): void {
 		add_action( 'after_switch_theme', [ self::class, 'seed' ] );
 		add_action( 'admin_post_jk_reset', [ $this, 'reset' ] );
+		// After SettingsRegistry (init, 10) so the option's sanitize_callback is registered.
+		add_action( 'init', [ self::class, 'migrate_captcha' ], 20 );
+	}
+
+	/**
+	 * One-time move of the Turnstile keys from General to the Captcha section.
+	 * Runs only while jk_captcha does not exist yet; existing keys turn Turnstile on.
+	 */
+	public static function migrate_captcha(): void {
+		$name = Schema::option_name( 'captcha' );
+		if ( false !== get_option( $name, false ) ) {
+			return;
+		}
+
+		$general = Settings::raw( 'general' );
+		$site    = (string) ( $general['turnstile_site'] ?? '' );
+		$secret  = (string) ( $general['turnstile_secret'] ?? '' );
+		$values  = array_merge(
+			Schema::defaults( 'captcha' ),
+			[
+				'provider'         => '' !== $site && '' !== $secret ? 'turnstile' : 'none',
+				'turnstile_site'   => $site,
+				'turnstile_secret' => $secret,
+			]
+		);
+
+		// Autoloaded like the other sections: every page's boot data reads it.
+		add_option( $name, $values, '', true );
+		Settings::flush();
 	}
 
 	/**

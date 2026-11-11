@@ -1,33 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../lib/icons';
 import { track } from '../lib/dataLayer';
+import { useCaptcha } from '../lib/captcha';
 
 /**
  * Contact form card (rendered by src/sections/ContactSection.jsx).
  * Sends to POST /wp-json/jk/v1/contact; the same markup also works without JS
- * (it posts to admin-post.php).
+ * (it posts to admin-post.php). Spam check: see src/lib/captcha.js.
  */
-
-const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-let turnstilePromise = null;
-
-function loadTurnstile() {
-  if (window.turnstile) return Promise.resolve(window.turnstile);
-  if (!turnstilePromise) {
-    turnstilePromise = new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = TURNSTILE_SRC;
-      s.async = true;
-      s.onload = () => resolve(window.turnstile);
-      s.onerror = () => {
-        turnstilePromise = null;
-        reject(new Error('turnstile'));
-      };
-      document.head.append(s);
-    });
-  }
-  return turnstilePromise;
-}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -73,7 +53,8 @@ function Field({ prefix, name, label, placeholder, type = 'text', autoComplete, 
 }
 
 export default function ContactForm(props) {
-  const { prefix, heading, note, legend, topics, submit, success, error, callPrefix, phone, tel, rest, nonce, action, nojsNonce, ts, turnstile, labels } = props;
+  const { prefix, heading, note, legend, topics, submit, success, error, callPrefix, phone, tel, rest, nonce, action, nojsNonce, ts, captcha: captchaConfig, labels } = props;
+  const captcha = useCaptcha(captchaConfig);
 
   const [status, setStatus] = useState(props.status || ''); // '' | 'sending' | 'success' | 'error'
   const [serverMessage, setServerMessage] = useState('');
@@ -84,41 +65,12 @@ export default function ContactForm(props) {
 
   const mountedAt = useRef(Date.now());
   const honeypot = useRef(null);
-  const tsBox = useRef(null);
-  const tsWidget = useRef(null);
-  const tsToken = useRef('');
   const successRef = useRef(null);
   const fieldRefs = { name: useRef(null), email: useRef(null), message: useRef(null) };
 
   useEffect(() => {
     if (status === 'success') successRef.current?.focus();
   }, [status]);
-
-  const ensureTurnstile = async () => {
-    if (!turnstile || !tsBox.current || tsWidget.current !== null) return;
-    tsWidget.current = false; // loading
-    try {
-      const ts = await loadTurnstile();
-      tsWidget.current = ts.render(tsBox.current, {
-        sitekey: turnstile,
-        appearance: 'interaction-only',
-        callback: (token) => (tsToken.current = token),
-        'expired-callback': () => (tsToken.current = ''),
-        'error-callback': () => (tsToken.current = ''),
-      });
-    } catch {
-      tsWidget.current = null;
-    }
-  };
-
-  const waitForToken = async () => {
-    await ensureTurnstile();
-    const until = Date.now() + 10000;
-    while (!tsToken.current && Date.now() < until) {
-      await new Promise((r) => setTimeout(r, 200));
-    }
-    return tsToken.current;
-  };
 
   const onChange = (name, value) => {
     const next = { ...values, [name]: value };
@@ -141,8 +93,16 @@ export default function ContactForm(props) {
     }
 
     setStatus('sending');
+    let attempted = false;
     try {
-      const token = turnstile ? await waitForToken() : '';
+      const token = await captcha.getToken();
+      // An unticked v2 checkbox: say so instead of sending a request that will fail.
+      if (captcha.enabled && !token && captcha.needsBox && captchaConfig.provider === 'recaptcha') {
+        setServerMessage(labels.captcha);
+        setStatus('error');
+        return;
+      }
+      attempted = true;
       const res = await fetch(rest, {
         method: 'POST',
         credentials: 'same-origin',
@@ -153,7 +113,7 @@ export default function ContactForm(props) {
           website: honeypot.current?.value || '',
           elapsed: (Date.now() - mountedAt.current) / 1000,
           page: window.location.href,
-          'cf-turnstile-response': token,
+          ...(captcha.enabled ? { [captcha.field]: token } : {}),
         }),
       });
       const json = await res.json().catch(() => ({}));
@@ -177,10 +137,7 @@ export default function ContactForm(props) {
     } catch {
       setStatus('error');
     } finally {
-      if (tsWidget.current && window.turnstile) {
-        window.turnstile.reset(tsWidget.current);
-        tsToken.current = '';
-      }
+      if (attempted) captcha.reset();
     }
   };
 
@@ -204,7 +161,7 @@ export default function ContactForm(props) {
       method="post"
       noValidate
       onSubmit={onSubmit}
-      onFocus={turnstile ? ensureTurnstile : undefined}
+      onFocus={captcha.enabled ? captcha.ensure : undefined}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1.5">
@@ -241,7 +198,7 @@ export default function ContactForm(props) {
       <input type="hidden" name="action" value="jk_contact" />
       <input type="hidden" name="_jk_nonce" value={nojsNonce} />
       <input type="hidden" name="jk_ts" value={String(ts)} />
-      {turnstile && <div ref={tsBox} className="jk-turnstile" data-jk-turnstile=""></div>}
+      {captcha.needsBox && <div ref={captcha.boxRef} className="jk-captcha" data-jk-captcha={captchaConfig.provider}></div>}
       {status === 'error' && (
         <p role="alert" className="flex items-start gap-2.5 rounded-xl border border-ink px-4 py-3 text-[15px] font-medium">
           <Icon name="alert" size={20} className="mt-0.5 flex-none" />

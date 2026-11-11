@@ -720,7 +720,7 @@
     border-top-color: var(--color-paper);
     animation: jk-spin 700ms linear infinite;
   }
-  .jk-turnstile:empty {
+  .jk-captcha:empty {
     display: none;
   }
   .jk-hp {

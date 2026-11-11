@@ -7,6 +7,7 @@
 
 namespace JK\Rest;
 
+use JK\Captcha;
 use JK\Enquiries;
 use JK\Settings;
 use WP_Error;
@@ -44,7 +45,7 @@ final class ContactController {
 			[
 				'methods'             => 'POST',
 				'callback'            => [ $this, 'rest' ],
-				// Public form: protected by the nonce check, honeypot, timing, Turnstile and rate limit.
+				// Public form: protected by the nonce check, honeypot, timing, captcha and rate limit.
 				'permission_callback' => '__return_true',
 			]
 		);
@@ -157,13 +158,10 @@ final class ContactController {
 			);
 		}
 
-		// Turnstile, only when both keys are set.
-		$secret = (string) Settings::get( 'general.turnstile_secret' );
-		if ( '' !== $secret && '' !== (string) Settings::get( 'general.turnstile_site' ) ) {
-			$verified = self::verify_turnstile( $secret, $str( 'cf-turnstile-response' ) );
-			if ( ! $verified ) {
-				return new WP_Error( 'jk_turnstile', __( 'The spam check failed. Please try again.', 'jameskellie' ), [ 'status' => 400 ] );
-			}
+		// Turnstile or reCAPTCHA, as selected under James Kellie → Captcha.
+		$verified = Captcha::verify( $params, self::client_ip() );
+		if ( is_wp_error( $verified ) ) {
+			return $verified;
 		}
 
 		set_transient( $ip_key, $count + 1, self::RATE_WINDOW );
@@ -205,34 +203,6 @@ final class ContactController {
 		];
 
 		return (bool) wp_mail( $to, $subject, $body, $headers );
-	}
-
-	/**
-	 * Verify a Turnstile token server-side.
-	 *
-	 * @param string $secret Secret key.
-	 * @param string $token  Client token.
-	 */
-	private static function verify_turnstile( string $secret, string $token ): bool {
-		if ( '' === $token ) {
-			return false;
-		}
-		$response = wp_remote_post(
-			'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-			[
-				'timeout' => 8,
-				'body'    => [
-					'secret'   => $secret,
-					'response' => $token,
-					'remoteip' => self::client_ip(),
-				],
-			]
-		);
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-		$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
-		return is_array( $body ) && ! empty( $body['success'] );
 	}
 
 	/**

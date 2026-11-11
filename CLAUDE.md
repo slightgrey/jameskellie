@@ -13,6 +13,7 @@ React version of the `jameskellie-theme` PHP theme. It uses **the same data** (`
 - **Theme Settings admin is React** (`src/admin/main.jsx` → `AdminApp.jsx`, `fields.jsx`). `JK\Admin\Menu` registers the menu and prints the mount point, and `Menu::config()` passes the schema and nav to the app as `window.JKSettings`.
   - REST: `jk/v1/admin/settings/{section}` (GET/POST), `…/{section}/reset`, `jk/v1/admin/export`, `jk/v1/admin/import`, all `manage_options`. Saving goes through `update_option`, so the registered `Sanitizer::option` still runs.
   - The class names match the old FieldRenderer markup, so `src/admin/admin.css` (Tailwind, `tw:` prefix) styles both.
+- **Captcha** (James Kellie → Captcha, option `jk_captcha`): provider `none`, `turnstile` or `recaptcha` (v2/v3). `JK\Captcha` verifies server-side; `src/lib/captcha.js` (`useCaptcha`) loads the widget on first focus of the form. The browser only gets `{provider, siteKey, version}`. `JK_CAPTCHA_DISABLED` in wp-config is the kill switch. Old Turnstile keys from `jk_general` are moved once by `Admin\Seeder::migrate_captcha()`. Fields can use `show_if: { key: value }` in `config/fields.php` (React admin only).
 - **Still PHP:** the Book Appointment meta box (`AppointmentMetaBox` + `FieldRenderer` + `src/admin/metabox.js`), Enquiries CPT, contact endpoint `jk/v1/contact`, Performance, Custom Code, SEO. WordPress cannot load a theme without PHP.
 
 ## Rules

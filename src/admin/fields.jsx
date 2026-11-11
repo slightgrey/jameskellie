@@ -14,11 +14,14 @@ const WIDE_TYPES = ['repeater', 'code', 'editor'];
 
 const htmlId = (raw) => raw.replace(/[^A-Za-z0-9_-]+/g, '-').toLowerCase();
 
+/** A field with `show_if: { key: value }` only shows while those sibling values match. */
+const visible = (field, values) => !field.show_if || Object.entries(field.show_if).every(([key, want]) => values[key] === want);
+
 /** Label / control rows for a section. */
 export function FieldTable({ fields, values, onChange, base }) {
   return (
     <div className="jk-fields tw:divide-y tw:divide-neutral-200">
-      {fields.map((field) => {
+      {fields.filter((field) => visible(field, values)).map((field) => {
         const id = htmlId(`${base}-${field.key}`);
         const label = field.label ?? field.key;
         const wide = WIDE_TYPES.includes(field.type);
@@ -63,6 +66,10 @@ export function Field({ field, id, value, onChange, withHelp = false }) {
           onChange={(e) => onChange(e.target.value)}
         />
       );
+      break;
+
+    case 'password':
+      control = <SecretField id={id} value={value ?? ''} onChange={onChange} />;
       break;
 
     case 'url':
@@ -168,6 +175,28 @@ export function Field({ field, id, value, onChange, withHelp = false }) {
       {control}
       {withHelp && field.help && <p className="description">{field.help}</p>}
     </>
+  );
+}
+
+/* ------------------------------------------------------------ password (secret key) */
+
+function SecretField({ id, value, onChange }) {
+  const [shown, setShown] = useState(false);
+  return (
+    <div className="tw:flex tw:items-center tw:gap-2">
+      <input
+        type={shown ? 'text' : 'password'}
+        id={id}
+        value={value}
+        autoComplete="new-password"
+        spellCheck={false}
+        className="code tw:flex-1"
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <button type="button" className="jk-button jk-button-ghost" aria-pressed={shown ? 'true' : 'false'} onClick={() => setShown((s) => !s)}>
+        {shown ? 'Hide' : 'Show'}
+      </button>
+    </div>
   );
 }
 

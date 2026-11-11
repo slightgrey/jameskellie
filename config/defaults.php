@@ -10,10 +10,10 @@ defined( 'ABSPATH' ) || exit;
 
 return [
 	'general'     => [
-		'phone_display'    => '0411 644 713',
-		'phone_tel'        => '0411644713',
-		'emails'           => '',
-		'social'           => [
+		'phone_display'   => '0411 644 713',
+		'phone_tel'       => '0411644713',
+		'emails'          => '',
+		'social'          => [
 			// TODO: get the real URLs from James (HANDOFF §12).
 			[
 				'network' => 'facebook',
@@ -28,20 +28,18 @@ return [
 				'url'     => '',
 			],
 		],
-		'calendly_url'     => 'https://calendly.com/clubweb/15min',
-		'cta'              => [
+		'calendly_url'    => 'https://calendly.com/clubweb/15min',
+		'cta'             => [
 			'label' => 'Book a call',
 			'url'   => '/appointment/',
 		],
-		'logo'             => 0,
-		'sticky_header'    => true,
-		'back_to_top'      => true,
-		'click_hints'      => true,
-		'turnstile_site'   => '',
-		'turnstile_secret' => '',
-		'copyright'        => '© {year} JamesKellie.com.au',
-		'seo_description'  => 'James Kellie — SEO, Google Ads and web design for Australian businesses since 2003.',
-		'share_image'      => 0,
+		'logo'            => 0,
+		'sticky_header'   => true,
+		'back_to_top'     => true,
+		'click_hints'     => true,
+		'copyright'       => '© {year} JamesKellie.com.au',
+		'seo_description' => 'James Kellie — SEO, Google Ads and web design for Australian businesses since 2003.',
+		'share_image'     => 0,
 	],
 	'layout'      => [
 		'order' => [ 'hero', 'stats', 'services', 'experience', 'cta', 'skills', 'contact' ],
@@ -240,6 +238,15 @@ return [
 		'prefetch'          => true,
 		'lazy_calendly'     => true,
 		'delay_code'        => false,
+	],
+	// Existing Turnstile keys are moved here from jk_general by Admin\Seeder::migrate_captcha().
+	'captcha'     => [
+		'provider'          => 'none',
+		'turnstile_site'    => '',
+		'turnstile_secret'  => '',
+		'recaptcha_version' => 'v3',
+		'recaptcha_site'    => '',
+		'recaptcha_secret'  => '',
 	],
 	'code'        => [
 		'head'      => '',
