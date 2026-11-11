@@ -19,8 +19,9 @@
 
 /* ------------------------------------------------------------------ shell */
 
+/* Full width of the wp-admin content area: the live preview uses the extra room. Inputs keep
+   their own max-width (see .jk-fields), so screens without a preview still read well. */
 .jk-admin {
-  max-width: 1320px;
   margin: 20px 20px 0 2px;
   font-family: var(--tw-font-sans);
   color: #171717;
