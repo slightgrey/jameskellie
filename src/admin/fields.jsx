@@ -18,15 +18,18 @@ const htmlId = (raw) => raw.replace(/[^A-Za-z0-9_-]+/g, '-').toLowerCase();
 const visible = (field, values) => !field.show_if || Object.entries(field.show_if).every(([key, want]) => values[key] === want);
 
 /** Label / control rows for a section. */
-export function FieldTable({ fields, values, onChange, base }) {
+export function FieldTable({ fields, values, onChange, base, compact = false }) {
+  // compact: the fields column beside the live preview; admin.css (.jk-fields-compact) stacks
+  // labels above inputs at ≥1280px.
+  const columns = 'tw:md:grid-cols-[minmax(0,240px)_minmax(0,1fr)]';
   return (
-    <div className="jk-fields tw:divide-y tw:divide-neutral-200">
+    <div className={`jk-fields tw:divide-y tw:divide-neutral-200${compact ? ' jk-fields-compact' : ''}`}>
       {fields.filter((field) => visible(field, values)).map((field) => {
         const id = htmlId(`${base}-${field.key}`);
         const label = field.label ?? field.key;
         const wide = WIDE_TYPES.includes(field.type);
         return (
-          <div key={field.key} className={`tw:grid tw:gap-x-10 tw:gap-y-3 tw:py-6 ${wide ? '' : 'tw:md:grid-cols-[minmax(0,240px)_minmax(0,1fr)]'}`}>
+          <div key={field.key} className={`tw:grid tw:gap-x-10 tw:gap-y-3 tw:py-6 ${wide ? '' : columns}`}>
             <div className="tw:min-w-0">
               {GROUP_TYPES.includes(field.type) ? (
                 <span className="tw:block tw:text-[13px] tw:font-semibold tw:text-neutral-900">{label}</span>

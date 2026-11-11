@@ -154,6 +154,7 @@
 .jk-fields input[type="email"],
 .jk-fields select,
 .jk-fields textarea {
+  box-sizing: border-box;
   width: 100%;
   max-width: 640px;
   min-height: 40px;
@@ -518,4 +519,31 @@
 #jk-appointment .inside {
   margin: 0;
   padding: 4px 16px 16px;
+}
+
+/* ------------------------------------------------------------- live preview */
+
+/* Beside the fields (≥1280px) the preview is sticky; keep it within the window. */
+@media (min-width: 1280px) {
+  .jk-preview-scroll {
+    max-height: calc(100vh - 32px - 48px - 74px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* The narrow fields column: stack the link field's label and URL. */
+  .jk-fields-compact .jk-link {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* …and stack every label above its control. The md: grid utility is !important, and for
+   !important declarations an earlier layer wins, so this sits in `base` (as [hidden] does). */
+@layer base {
+  @media (min-width: 1280px) {
+    .jk-fields-compact > div {
+      grid-template-columns: minmax(0, 1fr) !important;
+      row-gap: 8px !important;
+      padding-top: 18px !important;
+      padding-bottom: 18px !important;
+    }
+  }
 }

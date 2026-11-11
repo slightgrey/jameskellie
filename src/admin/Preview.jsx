@@ -16,13 +16,28 @@ const readPrefs = () => {
   }
 };
 
+/** Open/closed and device, remembered per browser. Used by AdminApp for the layout too. */
+export function usePreviewPrefs() {
+  const [prefs, setPrefs] = useState(readPrefs);
+  const update = (next) =>
+    setPrefs((p) => {
+      const merged = { ...p, ...next };
+      try {
+        localStorage.setItem(STORE, JSON.stringify(merged));
+      } catch {
+        // Private mode: the choice just isn't remembered.
+      }
+      return merged;
+    });
+  return [prefs, update];
+}
+
 /**
  * Live preview of a Home section in an iframe of the real front page (?jk_preview=key).
  * Unsaved values go to jk/v1/admin/preview/{key} (sanitised, never saved); the render data
  * that comes back is posted into the frame, which redraws with the real component and CSS.
  */
-export default function Preview({ section, values }) {
-  const [prefs, setPrefs] = useState(readPrefs);
+export default function Preview({ section, values, prefs, update, split }) {
   const [height, setHeight] = useState(600);
   const [width, setWidth] = useState(0);
   const [state, setState] = useState('loading'); // loading | ready | updating | error
@@ -34,18 +49,6 @@ export default function Preview({ section, values }) {
   const src = cfg.preview.url.replace('{key}', encodeURIComponent(section));
   const device = DEVICES[prefs.device] || DEVICES.desktop;
   const scale = width ? Math.min(1, width / device.width) : 1;
-
-  const update = (next) => {
-    setPrefs((p) => {
-      const merged = { ...p, ...next };
-      try {
-        localStorage.setItem(STORE, JSON.stringify(merged));
-      } catch {
-        // Private mode: the toggle just isn't remembered.
-      }
-      return merged;
-    });
-  };
 
   const post = (data) => {
     latest.current = data;
@@ -110,7 +113,7 @@ export default function Preview({ section, values }) {
   const status = { loading: 'Loading…', updating: 'Updating…', error: 'Preview unavailable', ready: 'Live' }[state];
 
   return (
-    <section className="tw:mb-6 tw:overflow-hidden tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:shadow-sm" aria-label="Live preview">
+    <section className={`tw:overflow-hidden tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:shadow-sm ${split ? 'tw:mb-6 tw:min-[1280px]:mb-0' : 'tw:mb-6'}`} aria-label="Live preview">
       <header className="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-3 tw:border-b tw:border-neutral-200 tw:px-6 tw:py-4">
         <div className="tw:flex tw:items-center tw:gap-3">
           <span className="dashicons dashicons-visibility tw:text-neutral-500" aria-hidden="true"></span>
@@ -155,7 +158,8 @@ export default function Preview({ section, values }) {
       </header>
 
       {prefs.open && (
-        <div ref={boxRef} className="tw:bg-neutral-100 tw:p-4">
+        // Beside the fields it stays in view: anything taller than the window scrolls inside the box.
+        <div ref={boxRef} className={`tw:bg-neutral-100 tw:p-4 ${split ? 'jk-preview-scroll' : ''}`}>
           <div className="tw:mx-auto tw:overflow-hidden tw:rounded-lg tw:bg-white tw:shadow-sm" style={{ width: device.width * scale, height: height * scale }}>
             <iframe
               key={prefs.device}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cfg, { api } from './api';
 import { FieldContext, FieldTable } from './fields';
-import Preview from './Preview';
+import Preview, { usePreviewPrefs } from './Preview';
 
 const DISPLAY = { fontFamily: "'Roboto Condensed','Arial Narrow',sans-serif" };
 
@@ -211,6 +211,7 @@ export default function AdminApp() {
   const [status, setStatus] = useState('loading'); // loading | ready | saving | error
   const [notice, setNotice] = useState(null);
   const [version, setVersion] = useState(0); // re-keys the fields after load/reset/import
+  const [previewPrefs, updatePreview] = usePreviewPrefs();
 
   const info = sectionInfo(section);
   const fields = cfg.fields[section] || [];
@@ -327,6 +328,9 @@ export default function AdminApp() {
 
   const visible = !info.home || (values ? Boolean(values.enabled) : enabled[section]);
   const busy = status === 'loading' || status === 'saving';
+  const hasPreview = Boolean(values) && Boolean(cfg.preview?.sections?.includes(section));
+  // ≥1280px: preview (sticky) on the left, fields in a column on the right.
+  const split = hasPreview && previewPrefs.open;
 
   return (
     <FieldContext.Provider value={ctx}>
@@ -336,9 +340,14 @@ export default function AdminApp() {
       <div className="tw:mt-6 tw:grid tw:items-start tw:gap-6 tw:min-[961px]:grid-cols-[232px_minmax(0,1fr)]">
         <Sidebar current={section} enabled={enabled} onSelect={select} />
 
-        <div className="tw:min-w-0">
-          {values && cfg.preview?.sections?.includes(section) && <Preview key={section} section={section} values={values} />}
+        <div className={split ? 'tw:min-w-0 tw:min-[1280px]:grid tw:min-[1280px]:grid-cols-[minmax(0,1fr)_400px] tw:min-[1280px]:items-start tw:min-[1280px]:gap-6' : 'tw:min-w-0'}>
+          {hasPreview && (
+            <div className={split ? 'tw:min-w-0 tw:min-[1280px]:sticky tw:min-[1280px]:top-12' : undefined}>
+              <Preview key={section} section={section} values={values} prefs={previewPrefs} update={updatePreview} split={split} />
+            </div>
+          )}
 
+          <div className="tw:min-w-0">
           <section className="tw:overflow-hidden tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:shadow-sm">
             <header className="tw:flex tw:flex-wrap tw:items-start tw:justify-between tw:gap-4 tw:border-b tw:border-neutral-200 tw:px-8 tw:py-7">
               <div className="tw:flex tw:items-start tw:gap-4">
@@ -367,7 +376,7 @@ export default function AdminApp() {
             <form id="jk-settings-form" onSubmit={save} aria-busy={busy ? 'true' : 'false'} className={status === 'loading' ? 'tw:opacity-50' : undefined}>
               <div className="tw:px-8">
                 {values ? (
-                  <FieldTable key={`${section}-${version}`} fields={fields} values={values} onChange={onChange} base={`jk_${section}`} />
+                  <FieldTable key={`${section}-${version}`} fields={fields} values={values} onChange={onChange} base={`jk_${section}`} compact={split} />
                 ) : (
                   <p className="tw:py-8 tw:text-sm tw:text-neutral-500">{status === 'error' ? 'The settings could not be loaded.' : 'Loading…'}</p>
                 )}
@@ -403,6 +412,7 @@ export default function AdminApp() {
               }}
             />
           )}
+          </div>
         </div>
       </div>
     </FieldContext.Provider>
