@@ -43,6 +43,13 @@ final class Performance {
 			add_filter( 'pings_open', '__return_false', 20 );
 		}
 
+		// Emoji script in wp-admin too; emoji still display using the system font.
+		if ( $this->opt['disable_emojis'] ) {
+			remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+			remove_action( 'admin_enqueue_scripts', 'wp_enqueue_emoji_styles' );
+			remove_action( 'admin_print_styles', 'print_emoji_styles' );
+		}
+
 		if ( is_admin() || wp_doing_ajax() || wp_doing_cron() ) {
 			return;
 		}
@@ -57,6 +64,8 @@ final class Performance {
 			add_filter( 'tiny_mce_plugins', static fn( $plugins ) => is_array( $plugins ) ? array_diff( $plugins, [ 'wpemoji' ] ) : [] );
 			add_filter( 'emoji_svg_url', '__return_false' );
 			add_filter( 'wp_resource_hints', [ $this, 'remove_emoji_prefetch' ], 10, 2 );
+			remove_action( 'embed_head', 'print_emoji_detection_script' );
+			remove_action( 'enqueue_embed_scripts', 'wp_enqueue_emoji_styles' );
 		}
 
 		if ( $this->opt['disable_oembed'] ) {
@@ -96,9 +105,11 @@ final class Performance {
 	 */
 	public function dequeue(): void {
 		if ( $this->opt['remove_block_css'] ) {
-			foreach ( [ 'wp-block-library', 'wp-block-library-theme', 'global-styles', 'classic-theme-styles', 'core-block-supports' ] as $handle ) {
+			// wp-img-auto-sizes-contain only matters for WordPress-rendered images with sizes="auto".
+			foreach ( [ 'wp-block-library', 'wp-block-library-theme', 'global-styles', 'classic-theme-styles', 'core-block-supports', 'wp-img-auto-sizes-contain' ] as $handle ) {
 				wp_dequeue_style( $handle );
 			}
+			remove_action( 'wp_footer', 'wp_enqueue_global_styles', 1 );
 		}
 
 		if ( $this->opt['disable_dashicons'] && ! is_user_logged_in() ) {

@@ -223,6 +223,7 @@ return [
 		'error'         => 'Sorry, something went wrong. Please call 0411 644 713 or try again.',
 	],
 	'performance' => [
+		'minify_html'       => true,
 		'disable_emojis'    => true,
 		'disable_oembed'    => true,
 		'remove_block_css'  => true,

@@ -542,6 +542,12 @@ return [
 		'title'  => 'Performance',
 		'fields' => [
 			[
+				'key'   => 'minify_html',
+				'type'  => 'toggle',
+				'label' => 'Minify HTML',
+				'help'  => 'Removes comments and extra whitespace from front-end pages (View Source shows compact HTML). Turn off while debugging markup.',
+			],
+			[
 				'key'   => 'disable_emojis',
 				'type'  => 'toggle',
 				'label' => 'Disable emojis',

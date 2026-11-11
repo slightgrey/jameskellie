@@ -24,6 +24,7 @@ final class Theme {
 
 		( new Assets() )->hooks();
 		( new Performance() )->hooks();
+		( new Minify() )->hooks();
 		( new CustomCode() )->hooks();
 		( new Seo() )->hooks();
 		( new Spa() )->hooks();
