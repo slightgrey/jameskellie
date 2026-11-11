@@ -3,7 +3,7 @@ Theme Name: James Kellie (React)
 Theme URI: https://jameskellie.com.au/
 Author: Vince
 Description: React version of the jameskellie.com.au theme. The whole front end and the Theme Settings admin are React apps (React Router, Tailwind v4, Vite); PHP only serves data, SEO tags and the REST API. No plugins required.
-Version: 2.0.0
+Version: 2.1.0
 Requires at least: 6.6
 Requires PHP: 8.1
 Text Domain: jameskellie
