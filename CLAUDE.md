@@ -14,7 +14,16 @@ React version of the `jameskellie-theme` PHP theme. It uses **the same data** (`
   - REST: `jk/v1/admin/settings/{section}` (GET/POST), `…/{section}/reset`, `jk/v1/admin/export`, `jk/v1/admin/import`, all `manage_options`. Saving goes through `update_option`, so the registered `Sanitizer::option` still runs.
   - The class names match the old FieldRenderer markup, so `src/admin/admin.css` (Tailwind, `tw:` prefix) styles both.
 - **Captcha** (James Kellie → Captcha, option `jk_captcha`): provider `none`, `turnstile` or `recaptcha` (v2/v3). `JK\Captcha` verifies server-side; `src/lib/captcha.js` (`useCaptcha`) loads the widget on first focus of the form. The browser only gets `{provider, siteKey, version}`. `JK_CAPTCHA_DISABLED` in wp-config is the kill switch. Old Turnstile keys from `jk_general` are moved once by `Admin\Seeder::migrate_captcha()`. Fields can use `show_if: { key: value }` in `config/fields.php` (React admin only).
-- **Live preview** (every Home section's settings screen): `src/admin/Preview.jsx` iframes `/?jk_preview={key}` (administrators only, noindex, no admin bar), where `src/preview/PreviewApp.jsx` renders that one section with the real component. Unsaved values go to `POST jk/v1/admin/preview/{key}` → `Boot::preview_data()` (sanitised, never saved) and are posted into the frame. Links and form submits are blocked inside the preview. Sections are listed in `Boot::PREVIEW_SECTIONS`.
+- **Live preview** (every Home section's settings screen; the frame itself needs `edit_posts`, because the blocks use it too): `src/admin/Preview.jsx` iframes `/?jk_preview={key}` (administrators only, noindex, no admin bar), where `src/preview/PreviewApp.jsx` renders that one section with the real component. Unsaved values go to `POST jk/v1/admin/preview/{key}` → `Boot::preview_data()` (sanitised, never saved) and are posted into the frame. Links and form submits are blocked inside the preview. Sections are listed in `Boot::PREVIEW_SECTIONS`.
+- **Blocks** (`inc/Blocks.php`, `src/blocks/editor.jsx`): `jameskellie/{hero|stats|services|experience|cta|skills|contact}`, inserter category "James Kellie". They are dynamic data blocks.
+  - `save` returns null. The `data` attribute holds the raw field values (`config/fields.php` keys, without `enabled`), and a new block copies the section's Theme Settings.
+  - `Blocks::values()` sanitises them on read (`Sanitizer::section` + `Settings::merge`).
+  - `Boot::route()` returns `blocks` segments (`section` with `section_data()`, or `html` for runs of other blocks), and `src/pages/Page.jsx` renders them with the Home section components.
+  - On a block page, `Boot::link()` keeps `#anchor` links to that page's own sections.
+  - The Contact endpoint also accepts the topics of the sending page's Contact blocks.
+  - Editor: the canvas is a `?jk_preview` frame fed by `POST jk/v1/blocks/preview/{key}` (`edit_posts`). **Edit content** opens a modal that reuses `FieldTable` from `src/admin/fields.jsx`. The message protocol lives in `src/admin/usePreviewFrame.js`.
+  - The bundle is a classic IIFE (`vite.blocks.config.js` → `dist/blocks/`) using WP's `React`/`ReactJSXRuntime` and `window.wp`. `npm run build` builds it after the main bundle; `npm run dev:blocks` watches it.
+- **Page templates** `templates/page-full-width.php` and `templates/page-canvas.php` only include `index.php`. `Boot::template()` gives `route.template` (`default`/`full-width`/`canvas`), and the body class is `jk-tpl-*`. Full Width drops the title column (an sr-only H1 stays if there's no visible H1). Canvas also hides the header, footer and back-to-top (`App.jsx`).
 - **Still PHP:** the Book Appointment meta box (`AppointmentMetaBox` + `FieldRenderer` + `src/admin/metabox.js`), Enquiries CPT, contact endpoint `jk/v1/contact`, Performance, Custom Code, SEO. WordPress cannot load a theme without PHP.
 
 ## Security decisions (keep these)
@@ -39,7 +48,8 @@ React version of the `jameskellie-theme` PHP theme. It uses **the same data** (`
 ```bash
 composer install && npm install
 npm run dev     # Vite :5173, writes /hot so PHP enqueues from it
-npm run build   # dist/ with manifest
+npm run build   # dist/ with manifest, then dist/blocks/ (block editor bundle)
+npm run dev:blocks   # rebuild dist/blocks/ on change (the dev server doesn't serve it)
 composer lint   # PHPCS (WPCS)
 npm run version:patch|minor|major   # bumps style.css, JK_VERSION and package.json together
 npm run bundle  # build + releases/jameskellie-vX.Y.Z.zip (refuses with hot present or versions out of step)

@@ -21,7 +21,7 @@ function RouteView({ route, site }) {
     case 'appointment':
       return <Appointment data={route.data} site={site} />;
     case 'page':
-      return <Page route={route} />;
+      return <Page route={route} site={site} />;
     case 'posts':
       return <PostsIndex route={route} site={site} />;
     default:
@@ -172,17 +172,20 @@ export default function App({ site, initialRoute }) {
     navigated();
   }, [view]);
 
+  // Canvas page template: content only, no site header, footer or back-to-top.
+  const canvas = view.route?.type === 'page' && view.route.template === 'canvas';
+
   return (
     <>
       <a className="jk-skip" href="#main" data-no-spa="">
         {site.i18n.skip}
       </a>
-      <Header site={site} path={view.path} />
+      {!canvas && <Header site={site} path={view.path} />}
       <main id="main" data-spa-main="" tabIndex={-1} ref={mainRef} className={leaving ? 'is-leaving' : undefined}>
         <RouteView key={view.path} route={view.route} site={site} />
       </main>
-      <Footer site={site} />
-      {site.backToTop && <BackToTop label={site.i18n.backToTop} />}
+      {!canvas && <Footer site={site} />}
+      {!canvas && site.backToTop && <BackToTop label={site.i18n.backToTop} />}
       <div id="jk-announcer" className="sr-only" aria-live="polite" aria-atomic="true">
         {announcement}
       </div>

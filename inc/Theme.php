@@ -35,6 +35,7 @@ final class Theme {
 		( new Enquiries() )->hooks();
 		( new Rest\ContactController() )->hooks();
 		( new Rest\SettingsController() )->hooks();
+		( new Blocks() )->hooks();
 		( new Admin\Seeder() )->hooks();
 
 		if ( is_admin() ) {
@@ -75,6 +76,12 @@ final class Theme {
 		$classes[] = 'jk';
 		if ( Settings::get( 'general.sticky_header' ) ) {
 			$classes[] = 'jk-sticky';
+		}
+		if ( is_singular() ) {
+			$template = Boot::template( (int) get_queried_object_id() );
+			if ( 'default' !== $template ) {
+				$classes[] = 'jk-tpl-' . $template;
+			}
 		}
 		return $classes;
 	}

@@ -7,6 +7,7 @@
 
 namespace JK\Rest;
 
+use JK\Blocks;
 use JK\Captcha;
 use JK\Enquiries;
 use JK\Settings;
@@ -128,7 +129,10 @@ final class ContactController {
 		}
 		set_transient( $attempt_key, $attempts + 1, self::RATE_WINDOW );
 
-		$topics = array_values( (array) Settings::get( 'contact.topics', [] ) );
+		// A Contact block's own topics (on the page the form was sent from) come first, so an
+		// unknown topic falls back to that form's first topic.
+		$page   = self::own_url( $str( 'page' ) );
+		$topics = array_values( array_unique( array_merge( Blocks::contact_topics( '' !== $page ? url_to_postid( $page ) : 0 ), array_map( 'strval', (array) Settings::get( 'contact.topics', [] ) ) ) ) );
 		$topic  = sanitize_text_field( $str( 'topic' ) );
 		if ( ! in_array( $topic, $topics, true ) ) {
 			$topic = (string) ( $topics[0] ?? '' );
@@ -141,7 +145,7 @@ final class ContactController {
 			'phone'   => mb_substr( trim( (string) preg_replace( '/[^0-9 +]/', '', $str( 'phone' ) ) ), 0, 32 ),
 			'message' => sanitize_textarea_field( $str( 'message' ) ),
 			// Only a page of this site, and not absurdly long; anything else is dropped.
-			'page'    => self::own_url( $str( 'page' ) ),
+			'page'    => $page,
 		];
 
 		$errors = [];

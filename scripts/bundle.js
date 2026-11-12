@@ -44,11 +44,15 @@ if (phpVersion !== version || pkgVersion !== version) {
 
 // 3. Build assets.
 console.log('  → Building assets...');
-execSync('npx vite build', { cwd: ROOT, stdio: 'inherit' });
+execSync('npm run build', { cwd: ROOT, stdio: 'inherit' });
 
 // 4. Verify dist was produced.
 if (!fs.existsSync(path.join(ROOT, 'dist/.vite/manifest.json'))) {
   console.error('  ✖ Build failed: dist/.vite/manifest.json not found.');
+  process.exit(1);
+}
+if (!fs.existsSync(path.join(ROOT, 'dist/blocks/editor.js'))) {
+  console.error('  ✖ Build failed: dist/blocks/editor.js (block editor bundle) not found.');
   process.exit(1);
 }
 
@@ -82,7 +86,7 @@ archive.pipe(output);
 const dirs = [
   'inc', // PHP classes
   'config', // settings schema and default content
-  'templates', // page templates (Book Appointment)
+  'templates', // page templates (Book Appointment, Full Width, Canvas)
   'assets', // self-hosted fonts
   'dist', // built React app and CSS
   'languages', // translations, if any

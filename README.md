@@ -5,7 +5,7 @@ A WordPress theme for jameskellie.com.au in which the whole front end and the Th
 ## Setup (Laragon)
 
 1. `composer install && npm install`
-2. `npm run build` (or `npm run dev` while working; it needs `jameskellie.test` and Vite on port 5173)
+2. `npm run build` (or `npm run dev` while working; it needs `jameskellie.test` and Vite on port 5173). The block editor bundle isn't served by the dev server: run `npm run dev:blocks` alongside it to rebuild `dist/blocks/` on change.
 3. Go to **Appearance → Themes** and activate **James Kellie (React)**.
 4. Pretty permalinks must be `/%postname%/`.
 5. Menus are stored per theme. Under **Appearance → Menus**, assign a menu to **Primary**, or leave it empty to get the automatic Services / Experience / Skills / Contact links.
@@ -15,6 +15,8 @@ A WordPress theme for jameskellie.com.au in which the whole front end and the Th
 - **James Kellie → General … Custom Code**: the React settings app. Changes save over the REST API, and the unsaved-changes dot shows anything not yet saved.
 - **Pages → Book an Appointment**: the Book Appointment box on the page edit screen.
 - **Export / Import** (on the General screen) uses the same JSON format as the PHP theme.
+- **James Kellie blocks**: in the page editor, the inserter's **James Kellie** category has a block for each Home section: Hero, Stats, Services, Experience, CTA band, Skills and Contact. Each block keeps its own copy of the content. A new block starts with the section's current Theme Settings, and later Theme Settings changes don't affect it. Click **Edit content** (in the block toolbar or the sidebar) to edit the fields beside a live preview. Other blocks, such as paragraphs and images, can sit between them.
+- **Page templates** (Page → Template): **Full Width** keeps the header and footer but drops the boxed title column. **Canvas** shows only the content, with no header, footer or back-to-top button, which suits landing pages built from James Kellie blocks.
 
 ## Versioning and releases
 

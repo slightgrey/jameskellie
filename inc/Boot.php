@@ -253,10 +253,12 @@ final class Boot {
 			}
 
 			return [
-				'type'    => 'page',
-				'title'   => get_the_title( $post ),
-				'date'    => 'post' === $post->post_type ? get_the_date( '', $post ) : '',
-				'content' => self::content( $post ),
+				'type'     => 'page',
+				'title'    => get_the_title( $post ),
+				'date'     => 'post' === $post->post_type ? get_the_date( '', $post ) : '',
+				'template' => self::template( $post_id ),
+				'content'  => self::content( $post ),
+				'blocks'   => self::blocks( $post ),
 			];
 		}
 
@@ -277,6 +279,101 @@ final class Boot {
 		$content = (string) apply_filters( 'the_content', $post->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core filter.
 		wp_reset_postdata();
 		return $content;
+	}
+
+	/**
+	 * Page templates React lays out differently, by template file.
+	 */
+	public const TEMPLATES = [
+		'templates/page-full-width.php' => 'full-width',
+		'templates/page-canvas.php'     => 'canvas',
+	];
+
+	/**
+	 * The page template: 'default', 'full-width' or 'canvas'.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public static function template( int $post_id ): string {
+		return self::TEMPLATES[ (string) get_page_template_slug( $post_id ) ] ?? 'default';
+	}
+
+	/**
+	 * James Kellie blocks on the page, as segments React renders in order:
+	 * { type: 'section', key, data } for each top-level JK block, and
+	 * { type: 'html', html } for each run of other blocks between them.
+	 * Null when the post has no JK blocks (React then shows `content` as before).
+	 *
+	 * @param \WP_Post $post Post.
+	 */
+	private static function blocks( \WP_Post $post ): ?array {
+		if ( post_password_required( $post ) || ! Blocks::in_content( $post->post_content ) ) {
+			return null;
+		}
+
+		$parsed = parse_blocks( $post->post_content );
+
+		// First pass: the section anchors on this page, so link() keeps #links to them in-page.
+		$values              = [];
+		self::$page_anchors  = [];
+		self::$page_services = null;
+		foreach ( $parsed as $i => $block ) {
+			$key = Blocks::section_key( $block );
+			if ( '' === $key ) {
+				continue;
+			}
+			$values[ $i ] = Blocks::values( $key, $block['attrs']['data'] ?? [] );
+			$anchor       = (string) $values[ $i ]['anchor'];
+			if ( '' !== $anchor ) {
+				self::$page_anchors[] = $anchor;
+			}
+			if ( 'services' === $key && null === self::$page_services ) {
+				self::$page_services = $anchor;
+			}
+		}
+
+		$GLOBALS['post'] = $post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- the_content filters expect the global post.
+		setup_postdata( $post );
+
+		$segments = [];
+		$run      = [];
+		$flush    = static function () use ( &$run, &$segments ): void {
+			if ( ! $run ) {
+				return;
+			}
+			$html = (string) apply_filters( 'the_content', serialize_blocks( $run ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core filter.
+			if ( '' !== trim( $html ) ) {
+				$segments[] = [
+					'type' => 'html',
+					'html' => $html,
+				];
+			}
+			$run = [];
+		};
+
+		foreach ( $parsed as $i => $block ) {
+			$key = Blocks::section_key( $block );
+			if ( '' === $key ) {
+				$run[] = $block;
+				continue;
+			}
+			$flush();
+			$data = self::section_data( $key, $values[ $i ] );
+			if ( null !== $data ) {
+				$segments[] = [
+					'type' => 'section',
+					'key'  => $key,
+					'data' => $data,
+				];
+			}
+		}
+		$flush();
+
+		wp_reset_postdata();
+		self::$page_anchors  = null;
+		self::$page_services = null;
+
+		return $segments;
 	}
 
 	/**
@@ -367,10 +464,25 @@ final class Boot {
 	private static bool $previewing = false;
 
 	/**
-	 * The section being previewed (?jk_preview=hero), for administrators only; '' otherwise.
+	 * Section anchors of the block page being built (see blocks()); null otherwise.
+	 *
+	 * @var string[]|null
+	 */
+	private static ?array $page_anchors = null;
+
+	/**
+	 * Anchor of the first Services block on the block page being built; null when none.
+	 *
+	 * @var string|null
+	 */
+	private static ?string $page_services = null;
+
+	/**
+	 * The section being previewed (?jk_preview=hero), for users who can edit posts (the Theme
+	 * Settings preview and the block editor preview); '' otherwise.
 	 */
 	public static function preview_key(): string {
-		if ( ! isset( $_GET['jk_preview'] ) || ! current_user_can( 'manage_options' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display mode, capability-checked.
+		if ( ! isset( $_GET['jk_preview'] ) || ! current_user_can( 'edit_posts' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display mode, capability-checked.
 			return '';
 		}
 		$key = sanitize_key( wp_unslash( $_GET['jk_preview'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- see above.
@@ -392,11 +504,12 @@ final class Boot {
 	/**
 	 * Preview data for unsaved values (REST). Sanitised like a save, never stored.
 	 *
-	 * @param string $key   Section key.
-	 * @param array  $input Raw values from the settings form.
+	 * @param string     $key      Section key.
+	 * @param array      $input    Raw values from the settings form or a block.
+	 * @param array|null $previous Stored values for `code` fields; null for the saved option (blocks pass []).
 	 */
-	public static function preview_data( string $key, array $input ): ?array {
-		$clean            = Admin\Sanitizer::section( $key, $input, Settings::raw( $key ) );
+	public static function preview_data( string $key, array $input, ?array $previous = null ): ?array {
+		$clean            = Admin\Sanitizer::section( $key, $input, $previous ?? Settings::raw( $key ) );
 		self::$previewing = true;
 		$data             = self::section_data( $key, Settings::merge( $key, $clean ) );
 		self::$previewing = false;
@@ -676,7 +789,8 @@ final class Boot {
 		if ( '' === $target || preg_match( '~[/#:?.]~', $target ) ) {
 			return $target;
 		}
-		$anchor = (string) Settings::get( 'services.anchor', 'services' );
+		// On a block page, the tabs of the page's own Services block.
+		$anchor = self::$page_services ?? (string) Settings::get( 'services.anchor', 'services' );
 		return '#' . ( '' !== $anchor ? $anchor . '-' : '' ) . sanitize_title( $target );
 	}
 
@@ -687,10 +801,28 @@ final class Boot {
 	 */
 	public static function link( string $url ): string {
 		// The REST preview runs outside the front page but renders Home sections, so keep #links.
-		if ( str_starts_with( $url, '#' ) && ! is_front_page() && ! self::$previewing ) {
+		if ( str_starts_with( $url, '#' ) && ! is_front_page() && ! self::$previewing && ! self::on_page( substr( $url, 1 ) ) ) {
 			return home_url( '/' ) . $url;
 		}
 		return $url;
+	}
+
+	/**
+	 * Whether an id belongs to a section on the block page being built: the section itself
+	 * (#services) or one of its tabs/panels (#services-seo).
+	 *
+	 * @param string $id Element id.
+	 */
+	private static function on_page( string $id ): bool {
+		if ( null === self::$page_anchors || '' === $id ) {
+			return false;
+		}
+		foreach ( self::$page_anchors as $anchor ) {
+			if ( $id === $anchor || str_starts_with( $id, $anchor . '-' ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

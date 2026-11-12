@@ -1,0 +1,100 @@
+/*
+ * Block editor styles for the James Kellie blocks.
+ * The Theme Settings field styles (tw:-prefixed utilities, no Preflight, scoped .jk-* classes)
+ * are reused for the content modal; the rest is the canvas preview frame.
+ */
+@import "../admin/admin.css";
+@source "./";
+
+/* ---------------------------------------------------------------- canvas */
+
+/* Sections are full width on the site, so give the block the whole editor width. */
+.wp-block.jk-block,
+.jk-block {
+  max-width: none !important;
+}
+.jk-block-preview-box {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  outline: 1px solid rgb(0 0 0 / 0.06);
+}
+.jk-block-preview-box iframe {
+  display: block;
+  border: 0;
+  transform-origin: 0 0;
+}
+.jk-block-preview-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 0.7);
+}
+.jk-block-preview-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+/* ----------------------------------------------------------------- modal */
+
+.jk-block-modal .components-modal__content {
+  display: flex;
+  flex-direction: column;
+}
+.jk-admin.jk-block-modal-body {
+  display: grid;
+  flex: 1;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+}
+@media (min-width: 1100px) {
+  .jk-admin.jk-block-modal-body {
+    grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .jk-block-modal-preview {
+    position: sticky;
+    top: 0;
+  }
+}
+.jk-block-modal-fields {
+  min-width: 0;
+}
+.jk-block-modal-preview {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f5f5f5;
+}
+.jk-block-modal-label {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #525252;
+}
+/* Stack each label above its control in the narrow fields column at every width. */
+@layer base {
+  .jk-block-modal-fields .jk-field-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    row-gap: 8px !important;
+    padding-top: 18px !important;
+    padding-bottom: 18px !important;
+  }
+}
+.jk-block-modal-fields .jk-link {
+  grid-template-columns: minmax(0, 1fr);
+}
+.jk-block-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #e5e5e5;
+}

@@ -11,10 +11,18 @@ export default function PreviewApp({ site, preview }) {
   const rootRef = useRef(null);
   const Section = SECTIONS[preview.key];
 
-  // Data from the settings screen (same origin, parent window only).
+  // Data from the settings screen or the block editor (same origin, an ancestor window only:
+  // in the block editor the frame's parent is the editor canvas iframe, and the data comes
+  // from the editor window above it).
   useEffect(() => {
+    const fromAncestor = (source) => {
+      for (let w = window.parent; w; w = w === w.parent ? null : w.parent) {
+        if (source === w) return true;
+      }
+      return false;
+    };
     const onMessage = (e) => {
-      if (e.origin !== window.location.origin || e.source !== window.parent) return;
+      if (e.origin !== window.location.origin || !fromAncestor(e.source)) return;
       const msg = e.data;
       if (msg && msg.type === 'jk:preview' && msg.key === preview.key && msg.data) setData(msg.data);
     };

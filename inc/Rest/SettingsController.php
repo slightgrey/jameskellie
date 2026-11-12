@@ -2,7 +2,7 @@
 /**
  * REST API for the React Theme Settings app: /wp-json/jk/v1/admin/…
  *
- * Every route needs manage_options. WordPress cookie auth checks the X-WP-Nonce
+ * The admin/ routes need manage_options; blocks/preview needs edit_posts. WordPress cookie auth checks the X-WP-Nonce
  * header, so a request without a valid nonce runs as a logged-out user and fails.
  *
  * @package jameskellie
@@ -85,6 +85,24 @@ final class SettingsController {
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'preview' ],
 				'permission_callback' => [ $this, 'can_manage' ],
+				'args'                => [
+					'section' => [
+						'type'              => 'string',
+						'required'          => true,
+						'validate_callback' => static fn( $value ): bool => in_array( $value, Boot::PREVIEW_SECTIONS, true ),
+					],
+				],
+			]
+		);
+
+		// Block editor preview: anyone who can edit posts (block content is public page content).
+		register_rest_route(
+			self::NS,
+			'/blocks/preview/(?P<section>[a-z]+)',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'block_preview' ],
+				'permission_callback' => static fn(): bool => current_user_can( 'edit_posts' ),
 				'args'                => [
 					'section' => [
 						'type'              => 'string',
@@ -179,6 +197,21 @@ final class SettingsController {
 			return new WP_Error( 'jk_bad_values', __( 'Nothing to preview.', 'jameskellie' ), [ 'status' => 400 ] );
 		}
 		return new WP_REST_Response( [ 'data' => Boot::preview_data( (string) $request['section'], $values ) ], 200 );
+	}
+
+	/**
+	 * Render data for a block's values, for the block editor preview. Nothing is saved.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function block_preview( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		$values = is_array( $params ) ? ( $params['values'] ?? null ) : null;
+		if ( ! is_array( $values ) ) {
+			return new WP_Error( 'jk_bad_values', __( 'Nothing to preview.', 'jameskellie' ), [ 'status' => 400 ] );
+		}
+		return new WP_REST_Response( [ 'data' => Boot::preview_data( (string) $request['section'], $values, [] ) ], 200 );
 	}
 
 	/**

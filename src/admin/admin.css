@@ -218,7 +218,11 @@
 }
 
 /* Switch */
+/* position: relative keeps the visually hidden checkbox beside its switch. Without it the
+   input sits at the top of the nearest positioned ancestor, and focusing it on click scrolls
+   the panel (the block content modal, the settings column) up to it. */
 .jk-switch {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -227,6 +231,8 @@
   color: #525252;
 }
 .jk-switch input {
+  top: 0;
+  left: 0;
   position: absolute;
   width: 1px;
   height: 1px;

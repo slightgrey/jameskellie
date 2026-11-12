@@ -1,11 +1,13 @@
 {
   "name": "jameskellie-react-theme",
   "private": true,
-  "version": "2.1.1",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build -c vite.blocks.config.js",
+    "build:blocks": "vite build -c vite.blocks.config.js",
+    "dev:blocks": "vite build -c vite.blocks.config.js --watch",
     "bundle": "node scripts/bundle.js",
     "version:patch": "node scripts/version.js patch",
     "version:minor": "node scripts/version.js minor",

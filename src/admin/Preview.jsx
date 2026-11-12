@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import cfg, { api } from './api';
+import usePreviewFrame from './usePreviewFrame';
 
 const DEVICES = {
   desktop: { label: 'Desktop', width: 1440 },
@@ -38,41 +39,21 @@ export function usePreviewPrefs() {
  * that comes back is posted into the frame, which redraws with the real component and CSS.
  */
 export default function Preview({ section, values, prefs, update, split }) {
-  const [height, setHeight] = useState(600);
   const [width, setWidth] = useState(0);
   const [state, setState] = useState('loading'); // loading | ready | updating | error
   const boxRef = useRef(null);
-  const frameRef = useRef(null);
-  const latest = useRef(null); // last render data, re-sent when the frame (re)loads
-  const ready = useRef(false);
+  // A new frame (device switch, reopen) mounts before its scripts run, so it announces itself
+  // again with jk:preview-ready; until then the hook holds messages.
+  const frame = usePreviewFrame(section, `${prefs.device}:${prefs.open}`);
+  const { frameRef, height, post } = frame;
 
   const src = cfg.preview.url.replace('{key}', encodeURIComponent(section));
   const device = DEVICES[prefs.device] || DEVICES.desktop;
   const scale = width ? Math.min(1, width / device.width) : 1;
 
-  const post = (data) => {
-    latest.current = data;
-    if (ready.current) frameRef.current?.contentWindow?.postMessage({ type: 'jk:preview', key: section, data }, window.location.origin);
-  };
-
-  // Messages from the frame.
   useEffect(() => {
-    const onMessage = (e) => {
-      if (e.origin !== window.location.origin || e.source !== frameRef.current?.contentWindow) return;
-      const msg = e.data || {};
-      if (msg.key !== section) return;
-      if (msg.type === 'jk:preview-ready') {
-        ready.current = true;
-        setState('ready');
-        if (latest.current) post(latest.current);
-      } else if (msg.type === 'jk:preview-height' && msg.height > 0) {
-        setHeight(msg.height);
-      }
-    };
-    window.addEventListener('message', onMessage);
-    return () => window.removeEventListener('message', onMessage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [section]);
+    setState(frame.ready ? 'ready' : 'loading');
+  }, [frame.ready]);
 
   // Panel width → scale.
   useEffect(() => {
@@ -94,7 +75,7 @@ export default function Preview({ section, values, prefs, update, split }) {
         const res = await api(`preview/${section}`, { method: 'POST', body: { values } });
         if (my !== seq.current) return;
         post(res.data);
-        setState(ready.current ? 'ready' : 'loading');
+        setState(frame.readyRef.current ? 'ready' : 'loading');
       } catch {
         if (my === seq.current) setState('error');
       }
@@ -102,13 +83,6 @@ export default function Preview({ section, values, prefs, update, split }) {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values, prefs.open, section]);
-
-  // A new frame (device switch, reopen) mounts before its scripts run, so it will
-  // announce itself again with jk:preview-ready; until then, hold messages.
-  useEffect(() => {
-    ready.current = false;
-    setState('loading');
-  }, [prefs.device, prefs.open]);
 
   const status = { loading: 'Loading…', updating: 'Updating…', error: 'Preview unavailable', ready: 'Live' }[state];
 

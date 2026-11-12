@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JK_VERSION', '2.1.1' );
+define( 'JK_VERSION', '3.0.0' );
 define( 'JK_DIR', __DIR__ );
 
 $jk_autoload = __DIR__ . '/vendor/autoload.php';
