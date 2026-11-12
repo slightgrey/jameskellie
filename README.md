@@ -2,10 +2,28 @@
 
 A WordPress theme for jameskellie.com.au in which the whole front end and the Theme Settings admin are React apps. It reads the same settings as the `jameskellie-theme` PHP theme, so you can switch themes without re-entering content.
 
-## Setup (Laragon)
+## Screenshots
+
+**Home page**
+
+![Home page: hero and stats](docs/screenshots/homepage.png)
+
+**Theme Settings** (James Kellie → Hero, with the live preview)
+
+![Theme Settings: Hero section with live preview](docs/screenshots/theme-settings.png)
+
+**James Kellie blocks** in the page editor: the inserter category, blocks on a page, and Edit content
+
+![Block inserter showing the James Kellie category](docs/screenshots/blocks-inserter.png)
+
+![Hero and Stats blocks in the page editor](docs/screenshots/blocks-editor.png)
+
+![Edit content modal for the Hero block, with live preview](docs/screenshots/blocks-edit-content.png)
+
+## Setup
 
 1. `composer install && npm install`
-2. `npm run build` (or `npm run dev` while working; it needs `jameskellie.test` and Vite on port 5173). The block editor bundle isn't served by the dev server: run `npm run dev:blocks` alongside it to rebuild `dist/blocks/` on change.
+2. `npm run build` (or `npm run dev` while working; it runs Vite on port 5173 beside your local WordPress site). The block editor bundle isn't served by the dev server: run `npm run dev:blocks` alongside it to rebuild `dist/blocks/` on change.
 3. Go to **Appearance → Themes** and activate **James Kellie (React)**.
 4. Pretty permalinks must be `/%postname%/`.
 5. Menus are stored per theme. Under **Appearance → Menus**, assign a menu to **Primary**, or leave it empty to get the automatic Services / Experience / Skills / Contact links.
