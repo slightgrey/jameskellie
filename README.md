@@ -67,4 +67,4 @@ Pages are rendered in the browser. The `<head>` (title, description, canonical, 
 
 ## Licence
 
-GPL v2 or later, the same licence as WordPress. See [LICENSE](LICENSE). The bundled fonts (Inter, Inter Tight, Roboto Condensed) are under the SIL Open Font License 1.1.
+Copyright (C) 2026 Vince. Licensed under GPL v2 or later, the same licence as WordPress. See [LICENSE](LICENSE). The bundled fonts (Inter, Inter Tight, Roboto Condensed) are under the SIL Open Font License 1.1.
