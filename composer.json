@@ -2,7 +2,7 @@
 	"name": "jameskellie/react-theme",
 	"description": "James Kellie WordPress theme (React)",
 	"type": "wordpress-theme",
-	"license": "proprietary",
+	"license": "GPL-2.0-or-later",
 	"require": {
 		"php": ">=8.1"
 	},

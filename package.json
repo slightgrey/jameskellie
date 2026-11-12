@@ -2,6 +2,7 @@
   "name": "jameskellie-react-theme",
   "private": true,
   "version": "3.0.0",
+  "license": "GPL-2.0-or-later",
   "type": "module",
   "scripts": {
     "dev": "vite",

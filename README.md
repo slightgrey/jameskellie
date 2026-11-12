@@ -64,3 +64,7 @@ Upload `releases/jameskellie-vX.Y.Z.zip` under **Appearance → Themes → Add N
 ## SEO note
 
 Pages are rendered in the browser. The `<head>` (title, description, canonical, Open Graph, JSON-LD, GTM) is still printed by PHP on every URL, and Google renders JavaScript. A small `<noscript>` block covers visitors without JavaScript.
+
+## Licence
+
+GPL v2 or later, the same licence as WordPress. See [LICENSE](LICENSE). The bundled fonts (Inter, Inter Tight, Roboto Condensed) are under the SIL Open Font License 1.1.
