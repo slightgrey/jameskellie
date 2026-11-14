@@ -10,6 +10,7 @@
     "build:blocks": "vite build -c vite.blocks.config.js",
     "dev:blocks": "vite build -c vite.blocks.config.js --watch",
     "bundle": "node scripts/bundle.js",
+    "release": "node scripts/release.js",
     "version:patch": "node scripts/version.js patch",
     "version:minor": "node scripts/version.js minor",
     "version:major": "node scripts/version.js major",

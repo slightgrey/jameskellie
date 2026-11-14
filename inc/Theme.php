@@ -38,6 +38,7 @@ final class Theme {
 		( new Rest\SettingsController() )->hooks();
 		( new Blocks() )->hooks();
 		( new Admin\Seeder() )->hooks();
+		( new Updater() )->hooks();
 
 		if ( is_admin() ) {
 			( new Admin\Menu() )->hooks();

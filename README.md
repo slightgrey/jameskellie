@@ -46,6 +46,7 @@ The version lives in three places, and the scripts keep them in step: the `style
 | `npm run version:minor` | 2.0.0 → 2.1.0: new features |
 | `npm run version:major` | 2.0.0 → 3.0.0: breaking changes |
 | `npm run bundle` | Builds the assets and writes `releases/jameskellie-vX.Y.Z.zip` |
+| `npm run release` | Publishes that zip as GitHub release `vX.Y.Z` (needs `gh`, a clean tree and HEAD pushed) |
 
 The bundle refuses to run while `npm run dev` is running (the `hot` file), or if the three versions disagree. The zip contains a `jameskellie/` folder with only what the live site needs: `inc/`, `config/`, `templates/`, `assets/`, `dist/`, `style.css` and the root PHP files. `src/`, `node_modules/`, `vendor/`, docs and scripts stay out. The `releases/` folder is gitignored.
 
@@ -55,11 +56,19 @@ A release:
 npm run version:patch   # or minor / major
 npm run bundle
 git commit -am "chore: release vX.Y.Z"
+git push
+npm run release         # GitHub release with the zip attached
 ```
 
 ## Deploying
 
 Upload `releases/jameskellie-vX.Y.Z.zip` under **Appearance → Themes → Add New → Upload Theme**, or upload the `jameskellie/` folder from the zip to `wp-content/themes/` over SFTP. The folder must be named `jameskellie`, because the Vite `base` in `vite.config.js` points there.
+
+### Updates from GitHub
+
+`style.css` declares `Update URI: https://github.com/slightgrey/jameskellie`, and `inc/Updater.php` answers WordPress's update check from the latest GitHub release (its `jameskellie-vX.Y.Z.zip` asset). After `npm run release`, live sites show the new version under **Dashboard → Updates** and **Appearance → Themes** (within 12 hours, or straight away with **Check again**), and update in one click or with auto-updates. The first version with the updater has to be uploaded by hand once. Updates are checked only while this theme is active.
+
+Optional `wp-config.php` constants: `JK_UPDATER_DISABLED` (true turns checks off), `JK_UPDATER_REPO` (`owner/repo`), `JK_GITHUB_TOKEN` (for a higher API rate limit).
 
 ## Contact form email
 
