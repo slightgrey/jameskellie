@@ -29,6 +29,8 @@ final class Menu {
 		add_action( 'admin_menu', [ $this, 'register' ] );
 		add_action( 'admin_menu', [ $this, 'enquiries_last' ], 999 );
 		add_action( 'admin_head', [ $this, 'fonts' ] );
+		add_filter( 'parent_file', [ $this, 'highlight' ] );
+		add_filter( 'submenu_file', [ $this, 'highlight' ] );
 	}
 
 	/**
@@ -70,16 +72,47 @@ final class Menu {
 			59
 		);
 
+		// The menu shows only "Theme Settings" (General) and Enquiries; the React app's own sidebar
+		// lists every section. The other sections are registered as hidden pages (empty parent), so
+		// their URLs (admin.php?page=jk-hero, …) still load, reload and work with back/forward.
 		foreach ( Schema::option_sections() as $section ) {
-			add_submenu_page(
-				self::PARENT,
-				Schema::title( $section ),
-				Schema::title( $section ),
+			$general = 'general' === $section;
+			$title   = $general ? __( 'Theme Settings', 'jameskellie' ) : Schema::title( $section );
+			$hook    = add_submenu_page(
+				$general ? self::PARENT : '',
+				$title,
+				$title,
 				'manage_options',
 				'jk-' . $section,
 				[ $this, 'render' ]
 			);
+			if ( ! $general && $hook ) {
+				// WordPress finds no title for hidden pages, so the browser tab would be blank.
+				add_action(
+					'load-' . $hook,
+					static function () use ( $title ): void {
+						$GLOBALS['title'] = $title; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- admin page title for our hidden page.
+					}
+				);
+			}
 		}
+	}
+
+	/**
+	 * Keep James Kellie open and "Theme Settings" current on the hidden section pages.
+	 *
+	 * Core recomputes the parent (get_admin_page_parent()) after the parent_file filter, and hidden
+	 * pages live under the '' parent, so map '' to our menu too, but only on our own pages.
+	 *
+	 * @param string|null $file Parent or submenu file.
+	 */
+	public function highlight( $file ) {
+		global $plugin_page, $_wp_real_parent_file;
+		if ( ! is_string( $plugin_page ) || ! str_starts_with( $plugin_page, 'jk-' ) ) {
+			return $file;
+		}
+		$_wp_real_parent_file[''] = self::PARENT; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- only on jk-* pages.
+		return self::PARENT;
 	}
 
 	/**
@@ -115,6 +148,7 @@ final class Menu {
 			__( 'Advanced', 'jameskellie' )  => [
 				'performance' => [ 'dashicons-performance', __( 'Speed tweaks for the front end. The defaults suit most sites.', 'jameskellie' ) ],
 				'captcha'     => [ 'dashicons-shield', __( 'Spam protection for the contact form: Cloudflare Turnstile or Google reCAPTCHA.', 'jameskellie' ) ],
+				'mail'        => [ 'dashicons-email', __( 'How the site sends email: PHP mail or SMTP, and the From address.', 'jameskellie' ) ],
 				'code'        => [ 'dashicons-editor-code', __( 'Tracking and verification snippets, such as Google Tag Manager.', 'jameskellie' ) ],
 			],
 		];
@@ -209,6 +243,8 @@ final class Menu {
 			'enabled'     => self::enabled(),
 			'adminUrl'    => admin_url( 'admin.php' ),
 			'homeUrl'     => home_url( '/' ),
+			// Default recipient for Mail → Send test email.
+			'userEmail'   => (string) wp_get_current_user()->user_email,
 			// Live preview: sections that have one, and the iframe URL ({key} is replaced).
 			'preview'     => [
 				'sections' => \JK\Boot::PREVIEW_SECTIONS,

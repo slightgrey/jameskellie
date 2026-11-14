@@ -32,6 +32,7 @@ final class Theme {
 		( new Spa() )->hooks();
 		( new SecurityHeaders() )->hooks();
 		( new UserEnumeration() )->hooks();
+		( new Mail() )->hooks();
 		( new Enquiries() )->hooks();
 		( new Rest\ContactController() )->hooks();
 		( new Rest\SettingsController() )->hooks();

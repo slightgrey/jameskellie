@@ -61,6 +61,25 @@ git commit -am "chore: release vX.Y.Z"
 
 Upload `releases/jameskellie-vX.Y.Z.zip` under **Appearance → Themes → Add New → Upload Theme**, or upload the `jameskellie/` folder from the zip to `wp-content/themes/` over SFTP. The folder must be named `jameskellie`, because the Vite `base` in `vite.config.js` points there.
 
+## Contact form email
+
+Enquiries are always saved under **James Kellie → Enquiries**. The notification email goes to **Theme Settings → General → Enquiry email recipient(s)**, or to the site admin email if that is empty.
+
+Most hosts block or spam-filter WordPress's default PHP `mail()`, so use SMTP: **James Kellie → Mail**, choose **SMTP** and enter the host, port, encryption, username and password of a mailbox on the site's domain (with SPF/DKIM set up). The From email and name are set there too, and **Send test email** (under the form) checks the saved settings. No plugin is needed.
+
+To keep the password out of the database (it is otherwise included in settings exports), define it in `wp-config.php` instead. Constants override the Mail screen, and `JK_SMTP_HOST` forces SMTP on:
+
+```php
+define( 'JK_SMTP_HOST', 'mail.example.com' );
+define( 'JK_SMTP_PORT', 587 );          // 465 with 'ssl'
+define( 'JK_SMTP_SECURE', 'tls' );      // 'tls', 'ssl' or ''
+define( 'JK_SMTP_USER', 'noreply@jameskellie.com.au' );
+define( 'JK_SMTP_PASS', 'the-mailbox-password' );
+// Optional: JK_MAIL_FROM, JK_MAIL_FROM_NAME
+```
+
+If sending fails, the enquiry shows "Not delivered" with the mail server's error.
+
 ## SEO note
 
 Pages are rendered in the browser. The `<head>` (title, description, canonical, Open Graph, JSON-LD, GTM) is still printed by PHP on every URL, and Google renders JavaScript. A small `<noscript>` block covers visitors without JavaScript.

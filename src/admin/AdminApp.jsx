@@ -13,11 +13,11 @@ const sectionInfo = (key) => {
   return { key, title: key, icon: 'dashicons-admin-generic', description: '', home: false };
 };
 
-/** Keep wp-admin's own submenu highlight in step with the in-app section. */
-function syncWpMenu(section) {
+/** wp-admin's submenu has one "Theme Settings" item (jk-general) for every section: keep it current. */
+function syncWpMenu() {
   document.querySelectorAll('#toplevel_page_jk-general .wp-submenu li').forEach((li) => {
     const a = li.querySelector('a');
-    const on = Boolean(a && new URL(a.href, window.location.href).searchParams.get('page') === `jk-${section}`);
+    const on = Boolean(a && new URL(a.href, window.location.href).searchParams.get('page') === 'jk-general');
     li.classList.toggle('current', on);
     a?.classList.toggle('current', on);
     if (on) a?.setAttribute('aria-current', 'page');
@@ -199,6 +199,53 @@ function ImportExport({ onImported, notify }) {
   );
 }
 
+/** Mail → Send test email (uses the saved settings, so it is off while there are unsaved changes). */
+function MailTest({ dirty }) {
+  const [to, setTo] = useState(cfg.userEmail || '');
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState(null); // { type: 'success' | 'error', text }
+
+  const send = async (e) => {
+    e.preventDefault();
+    if (busy || dirty) return;
+    setBusy(true);
+    setResult(null);
+    try {
+      const res = await api('mail/test', { method: 'POST', body: { to } });
+      setResult({ type: 'success', text: `Test email sent to ${res.to} with ${res.mailer}. Check the inbox (and spam folder).` });
+    } catch (err) {
+      setResult({ type: 'error', text: err.message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="tw:mt-6 tw:rounded-2xl tw:border tw:border-neutral-200 tw:bg-white tw:px-8 tw:py-7 tw:shadow-sm">
+      <p className="tw:m-0 tw:text-lg tw:font-bold tw:text-ink tw:font-display">Send test email</p>
+      <p className="tw:mt-1 tw:mb-5 tw:text-sm tw:text-neutral-500">Sends a short test message with the saved settings above, so you can check delivery before relying on the contact form.</p>
+      <form className="tw:flex tw:flex-wrap tw:items-center tw:gap-3" onSubmit={send}>
+        <label className="screen-reader-text" htmlFor="jk-mail-test-to">
+          Send the test to
+        </label>
+        <input type="email" id="jk-mail-test-to" className="regular-text" value={to} onChange={(e) => setTo(e.target.value)} placeholder="you@example.com" required />
+        <button type="submit" className="jk-button jk-button-ghost" disabled={busy || dirty}>
+          {busy ? 'Sending…' : 'Send test email'}
+        </button>
+      </form>
+      {dirty && <p className="tw:mt-3 tw:mb-0 tw:text-xs tw:text-amber-800">Save your changes first: the test uses the saved settings.</p>}
+      {result && (
+        <p
+          role={result.type === 'error' ? 'alert' : 'status'}
+          className={`tw:mt-4 tw:mb-0 tw:rounded-xl tw:px-4 tw:py-3 tw:text-sm ${result.type === 'error' ? 'tw:bg-red-50 tw:text-red-700' : 'tw:bg-emerald-50 tw:text-emerald-700'}`}
+        >
+          {result.text}
+        </p>
+      )}
+    </section>
+  );
+}
+
 /**
  * Theme Settings: one screen per jk_* section, switched in-app.
  */
@@ -246,7 +293,7 @@ export default function AdminApp() {
 
   useEffect(() => {
     load(section);
-    syncWpMenu(section);
+    syncWpMenu();
   }, [section, load]);
 
   // Browser back/forward between sections.
@@ -418,6 +465,8 @@ export default function AdminApp() {
             </form>
 
           </section>
+
+          {section === 'mail' && values && <MailTest dirty={dirty} />}
 
           {section === 'general' && (
             <ImportExport

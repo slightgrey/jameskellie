@@ -772,6 +772,74 @@ return [
 			],
 		],
 	],
+	'mail'        => [
+		'title'  => 'Mail',
+		'fields' => [
+			[
+				'key'     => 'mailer',
+				'type'    => 'select',
+				'label'   => 'Send email with',
+				'help'    => 'Used by the contact form and all other WordPress email. Most hosts block or spam-filter PHP mail, so SMTP is recommended. JK_SMTP_* constants in wp-config.php override these settings.',
+				'choices' => [
+					'phpmail' => 'PHP mail (WordPress default)',
+					'smtp'    => 'SMTP',
+				],
+			],
+			[
+				'key'   => 'from_email',
+				'type'  => 'email',
+				'label' => 'From email',
+				'help'  => 'Use an address on this site’s domain. Empty uses the SMTP username, or WordPress’s default.',
+			],
+			[
+				'key'   => 'from_name',
+				'type'  => 'text',
+				'label' => 'From name',
+				'help'  => 'Empty uses the site title.',
+			],
+			[
+				'key'     => 'smtp_host',
+				'type'    => 'text',
+				'label'   => 'SMTP host',
+				'help'    => 'e.g. mail.jameskellie.com.au or smtp.gmail.com.',
+				'show_if' => [ 'mailer' => 'smtp' ],
+			],
+			[
+				'key'     => 'smtp_port',
+				'type'    => 'number',
+				'label'   => 'SMTP port',
+				'help'    => '587 for TLS, 465 for SSL.',
+				'min'     => 1,
+				'max'     => 65535,
+				'show_if' => [ 'mailer' => 'smtp' ],
+			],
+			[
+				'key'     => 'smtp_secure',
+				'type'    => 'select',
+				'label'   => 'Encryption',
+				'choices' => [
+					'tls'  => 'TLS (STARTTLS)',
+					'ssl'  => 'SSL',
+					'none' => 'None',
+				],
+				'show_if' => [ 'mailer' => 'smtp' ],
+			],
+			[
+				'key'     => 'smtp_user',
+				'type'    => 'text',
+				'label'   => 'SMTP username',
+				'help'    => 'Usually the full email address. Empty sends without logging in.',
+				'show_if' => [ 'mailer' => 'smtp' ],
+			],
+			[
+				'key'     => 'smtp_pass',
+				'type'    => 'password',
+				'label'   => 'SMTP password',
+				'help'    => 'Stored in the database and included in settings exports: keep export files private.',
+				'show_if' => [ 'mailer' => 'smtp' ],
+			],
+		],
+	],
 	'code'        => [
 		'title'  => 'Custom Code',
 		'fields' => [

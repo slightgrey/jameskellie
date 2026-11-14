@@ -13,6 +13,7 @@ namespace JK\Rest;
 use JK\Admin\ImportExport;
 use JK\Admin\Menu;
 use JK\Boot;
+use JK\Mail;
 use JK\Schema;
 use JK\Settings;
 use WP_Error;
@@ -115,6 +116,16 @@ final class SettingsController {
 
 		register_rest_route(
 			self::NS,
+			'/admin/mail/test',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'mail_test' ],
+				'permission_callback' => [ $this, 'can_manage' ],
+			]
+		);
+
+		register_rest_route(
+			self::NS,
 			'/admin/export',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -139,6 +150,28 @@ final class SettingsController {
 	 */
 	public function can_manage(): bool {
 		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Send a test email with the saved Mail settings.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function mail_test( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		$raw    = trim( is_array( $params ) && is_scalar( $params['to'] ?? null ) ? (string) $params['to'] : '' );
+		// Only an empty field falls back to your own address; anything else must be a valid email.
+		$to = '' === $raw ? (string) wp_get_current_user()->user_email : sanitize_email( $raw );
+		if ( ! is_email( $to ) ) {
+			return new WP_Error( 'jk_bad_email', __( 'Please enter a valid email address.', 'jameskellie' ), [ 'status' => 400 ] );
+		}
+
+		$result = Mail::send_test( $to );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return new WP_REST_Response( $result, 200 );
 	}
 
 	/**
