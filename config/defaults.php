@@ -248,6 +248,16 @@ return [
 		'recaptcha_site'    => '',
 		'recaptcha_secret'  => '',
 	],
+	'mail'        => [
+		'mailer'      => 'phpmail',
+		'from_email'  => '',
+		'from_name'   => '',
+		'smtp_host'   => '',
+		'smtp_port'   => 587,
+		'smtp_secure' => 'tls',
+		'smtp_user'   => '',
+		'smtp_pass'   => '',
+	],
 	'code'        => [
 		'head'      => '',
 		'body_open' => '',

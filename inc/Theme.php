@@ -32,11 +32,13 @@ final class Theme {
 		( new Spa() )->hooks();
 		( new SecurityHeaders() )->hooks();
 		( new UserEnumeration() )->hooks();
+		( new Mail() )->hooks();
 		( new Enquiries() )->hooks();
 		( new Rest\ContactController() )->hooks();
 		( new Rest\SettingsController() )->hooks();
 		( new Blocks() )->hooks();
 		( new Admin\Seeder() )->hooks();
+		( new Updater() )->hooks();
 
 		if ( is_admin() ) {
 			( new Admin\Menu() )->hooks();

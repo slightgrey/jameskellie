@@ -10,6 +10,7 @@ namespace JK\Rest;
 use JK\Blocks;
 use JK\Captcha;
 use JK\Enquiries;
+use JK\Mail;
 use JK\Settings;
 use WP_Error;
 use WP_REST_Request;
@@ -178,7 +179,11 @@ final class ContactController {
 
 		set_transient( $ip_key, $count + 1, self::RATE_WINDOW );
 
+		Mail::reset();
 		$sent = self::send( $data );
+		if ( ! $sent ) {
+			$data['mail_error'] = sanitize_text_field( Mail::last_error() );
+		}
 		Enquiries::store( $data, $sent );
 
 		return true;

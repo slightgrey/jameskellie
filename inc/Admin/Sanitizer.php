@@ -147,6 +147,11 @@ final class Sanitizer {
 				}
 				return array_values( $rows );
 
+			case 'password':
+				// Keep secrets as typed (sanitize_text_field would strip "<" or "%xx" from a password);
+				// only drop control characters and surrounding whitespace.
+				return trim( (string) preg_replace( '/[\x00-\x1F\x7F]/', '', self::str( $value ) ) );
+
 			default:
 				return sanitize_text_field( self::str( $value ) );
 		}

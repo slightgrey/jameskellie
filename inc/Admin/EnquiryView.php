@@ -71,18 +71,19 @@ final class EnquiryView {
 			return;
 		}
 
-		$data    = (array) get_post_meta( $post->ID, Enquiries::META, true );
-		$name    = (string) ( $data['name'] ?? '' );
-		$email   = (string) ( $data['email'] ?? '' );
-		$phone   = (string) ( $data['phone'] ?? '' );
-		$topic   = (string) ( $data['topic'] ?? '' );
-		$message = (string) ( $data['message'] ?? '' );
-		$page    = (string) ( $data['page'] ?? '' );
-		$sent    = ! empty( $data['mail_sent'] );
-		$time    = (int) get_post_time( 'U', true, $post );
-		$tel     = 'tel:' . preg_replace( '/[^0-9+]/', '', $phone );
-		$list    = admin_url( 'edit.php?post_type=' . Enquiries::POST_TYPE );
-		$reply   = 'mailto:' . rawurlencode( $email ) . '?subject=' . rawurlencode(
+		$data       = (array) get_post_meta( $post->ID, Enquiries::META, true );
+		$name       = (string) ( $data['name'] ?? '' );
+		$email      = (string) ( $data['email'] ?? '' );
+		$phone      = (string) ( $data['phone'] ?? '' );
+		$topic      = (string) ( $data['topic'] ?? '' );
+		$message    = (string) ( $data['message'] ?? '' );
+		$page       = (string) ( $data['page'] ?? '' );
+		$sent       = ! empty( $data['mail_sent'] );
+		$mail_error = (string) ( $data['mail_error'] ?? '' );
+		$time       = (int) get_post_time( 'U', true, $post );
+		$tel        = 'tel:' . preg_replace( '/[^0-9+]/', '', $phone );
+		$list       = admin_url( 'edit.php?post_type=' . Enquiries::POST_TYPE );
+		$reply      = 'mailto:' . rawurlencode( $email ) . '?subject=' . rawurlencode(
 			/* translators: %s: enquiry topic */
 			'' !== $topic ? sprintf( __( 'Re: your enquiry about %s', 'jameskellie' ), $topic ) : __( 'Re: your enquiry', 'jameskellie' )
 		);
@@ -196,7 +197,10 @@ final class EnquiryView {
 							<p class="tw:mt-3 tw:mb-0 tw:inline-flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-amber-50 tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:text-amber-800">
 								<span class="tw:size-1.5 tw:rounded-full tw:bg-amber-500" aria-hidden="true"></span><?php esc_html_e( 'Not delivered', 'jameskellie' ); ?>
 							</p>
-							<p class="tw:mt-2 tw:mb-0 tw:text-xs tw:leading-relaxed tw:text-neutral-500"><?php esc_html_e( 'The notification email could not be sent, so this enquiry is only here. Check the site’s mail setup (an SMTP plugin usually fixes this).', 'jameskellie' ); ?></p>
+							<p class="tw:mt-2 tw:mb-0 tw:text-xs tw:leading-relaxed tw:text-neutral-500"><?php esc_html_e( 'The notification email could not be sent, so this enquiry is only here. Set up SMTP under James Kellie → Mail.', 'jameskellie' ); ?></p>
+							<?php if ( '' !== $mail_error ) : ?>
+								<p class="tw:mt-2 tw:mb-0 tw:text-xs tw:leading-relaxed tw:text-neutral-500"><?php echo esc_html( __( 'Error:', 'jameskellie' ) . ' ' . $mail_error ); ?></p>
+							<?php endif; ?>
 						<?php endif; ?>
 					</section>
 
