@@ -17,10 +17,12 @@ function isCurrent(url, path) {
 }
 
 function Logo({ site }) {
+  // When the uploaded logo has Media Library alt text, it names the link; otherwise fall back to the i18n label.
+  const alt = site.logo?.alt?.trim();
   return (
-    <a href={site.home} className="inline-flex items-center gap-3.5 text-ink" aria-label={site.i18n.logo} data-jk-logo="">
+    <a href={site.home} className="inline-flex items-center gap-3.5 text-ink" aria-label={alt ? undefined : site.i18n.logo} data-jk-logo="">
       {site.logo ? (
-        <Img img={{ ...site.logo, alt: '' }} className="h-12 w-auto" />
+        <Img img={site.logo} className="h-12 w-auto" />
       ) : (
         <>
           <span aria-hidden="true" className="flex size-12 items-center justify-center bg-ink font-logo text-[27px] leading-none font-bold tracking-[-0.01em] text-paper">
