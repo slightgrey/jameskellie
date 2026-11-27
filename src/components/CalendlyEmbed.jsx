@@ -11,6 +11,8 @@ export default function CalendlyEmbed({ src, url, lazy, title, loading, open }) 
   const boxRef = useRef(null);
   const [near, setNear] = useState(!lazy);
   const [loaded, setLoaded] = useState(false);
+  // Content height Calendly reports (calendly.page_height); null until the first message.
+  const [height, setHeight] = useState(null);
 
   useEffect(() => {
     if (near) return undefined;
@@ -35,13 +37,25 @@ export default function CalendlyEmbed({ src, url, lazy, title, loading, open }) 
     const onMessage = (e) => {
       if (e.origin !== 'https://calendly.com' || !e.data || typeof e.data !== 'object') return;
       if (e.data.event === 'calendly.event_scheduled') track({ event: 'appointment_booked' });
+      if (e.data.event === 'calendly.page_height') {
+        const h = parseInt(e.data.payload?.height, 10);
+        if (Number.isFinite(h) && h > 0) setHeight(h);
+      }
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
   return (
-    <div ref={boxRef} className="relative h-[1000px] overflow-hidden border border-ink md:h-[720px]">
+    <div
+      ref={boxRef}
+      className={
+        height
+          ? 'relative overflow-hidden border border-ink transition-[height] duration-200'
+          : 'relative h-[1000px] overflow-hidden border border-ink transition-[height] duration-200 md:h-[720px]'
+      }
+      style={height ? { height } : undefined}
+    >
       {!loaded && (
         <div className="jk-skeleton absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 p-6 text-center text-muted">
           <Icon name="calendar" size={40} stroke={1.5} className="text-ink" />
